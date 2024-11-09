@@ -1,4 +1,4 @@
-# CENT
+# CEND
 Central Encyclopedia for Name Disambiguation (CEND)
 
 
