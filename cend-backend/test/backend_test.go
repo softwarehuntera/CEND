@@ -1,4 +1,4 @@
-package backendtest
+package test
 
 // Create a test table with fake data
 
