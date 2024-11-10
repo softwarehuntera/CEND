@@ -8,11 +8,25 @@ https://github.com/docker/awesome-compose/tree/master/nginx-golang-postgres
 
 
 
+# Front End
 
+### API Interaction
+```
+// A 'category' must be specified for each operation
+// E.g. we are searching over the 'Company' category, or maybe the 'Fruit' category.
+// Operations provided by the backend are as follows:
+view terms
+delete term
+add term
+search term
+```
+
+# Back End
 ### Design decisions
-- Tables will each reflect a different category. Each table will have a unique schema.
-- The concept of 'disambiguation' will be totally defined by the schema of a table.
-- Functions to 'merge' and 'split' entries will be exposed.
+- Databases will each reflect a different category.
+- The concept of 'disambiguation' will be totally defined by the user. We just provide a tool that automates disambiguation recommendations.
+- Functions to 'merge' and 'split' entries will be exposed, for entity disambiguation.
+
 
 ### The hard part
 - Providing recommendations for searches.
@@ -40,3 +54,14 @@ So maybe we have columns that are 'identifier columns' where you *must* match on
 
 ### Smart Goals
 - Implement basic database operations tests
+
+
+### Design Decision Issues
+
+After reading more about modern text search, we know that tools like Lucene and Elasticsearch
+utilize the NoSQL database schema. The schema does not need to be specified before-hand. And an inverse
+document store is used for indexing of the documents. So I need to think about my database design, with respect to search.
+How do I do this? Well, we can bake in the search algorithm to the database design, and assume that everything will function on
+tf-idf. This could work in a relational database, but I believe the 'finding' of documents will be much more difficult.
+
+
