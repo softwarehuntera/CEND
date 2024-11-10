@@ -7,6 +7,8 @@ import (
 type DB struct {
 	collections map[string]collection.Collection
 }
-func New() {
-	collection.New()
+
+func New() *DB {
+	collections := make(map[string]collection.Collection)
+	return &DB{collections: collections}
 }
