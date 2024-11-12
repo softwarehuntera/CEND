@@ -52,7 +52,7 @@ func Equal(actual *Collection, expected *Collection) bool {
 	}
 	for docID, expectedDoc := range *expected.documents {
 		actualDoc, exists := (*actual.documents)[docID]
-		if !exists || actualDoc != expectedDoc {
+		if !exists || actualDoc.doc != expectedDoc.doc {
 			LogInfo(fmt.Sprintf("Mismatch in documents: expected docID %v to have content %v, got %v", docID, expectedDoc, actualDoc))
 			return false
 		}

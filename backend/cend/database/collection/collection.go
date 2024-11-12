@@ -2,8 +2,10 @@ package collection
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"unicode"
+
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -11,7 +13,6 @@ import (
 // Test add & delete operations
 // Add lower-case filtration before term storage
 // Add search functionality
- 
 
 // DocumentLocations stores the locations of documents containing a specific token.
 type DocumentLocations struct {
@@ -25,7 +26,12 @@ type Collection struct {
 	name         string
 	ngram		int
 	lookupTable  *map[string]*DocumentLocations
-	documents    *map[int]string
+	documents    *map[int]Document
+}
+
+type Document struct {
+	doc string
+	termFrequency map[string]int
 }
 
 // New creates and returns a new Collection with the specified name.
@@ -34,11 +40,13 @@ func New(name string) *Collection {
 		name:        name,
 		ngram:		3,
 		lookupTable: &map[string]*DocumentLocations{},
-		documents:   &map[int]string{},
+		documents:   &map[int]Document{},
 	}
 }
 
 func stringNormalize(s string) string {
+	// TODO: Remove stop words
+	
 	// Convert to lowercase
 	s = strings.ToLower(s)
 	
@@ -90,6 +98,15 @@ func nGramSet(document string, n int) map[string]struct{} {
 		nGramSet[nGram] = struct{}{}
 	}
 	return nGramSet
+}
+
+func nGramFrequency(document string, n int) map[string]int {
+	nGrams := nGrams(document, n)
+	nGramFrequency := make(map[string]int)
+	for _, nGram := range nGrams {
+		nGramFrequency[nGram]++
+	}
+	return nGramFrequency
 }
 
 // removeDocID removes the specified docID from DocumentLocations.
@@ -164,7 +181,7 @@ func (c *Collection) DocumentID(document string) *int {
 	for docID := range locations.docIDs {
 		actualDocument := (*c.documents)[docID]
 		LogInfo(fmt.Sprintf("Actual document %s", actualDocument))
-		if actualDocument == document {
+		if actualDocument.doc == document {
 			return &docID
 		}
 	}
@@ -186,7 +203,7 @@ func (c *Collection) DocumentAdd(document string) {
 	}
 
 	normalizedDocument := stringNormalize(document)
-	(*c.documents)[docID] = normalizedDocument
+	(*c.documents)[docID] = Document{doc: normalizedDocument, termFrequency: nGramFrequency(normalizedDocument, c.ngram)}
 	if len(normalizedDocument) != c.ngram {
 		c.tableAdd(normalizedDocument, docID)
 	}
@@ -217,4 +234,59 @@ func (c *Collection) DocumentRemove(document string) {
 	for ngram := range ngrams {
 		c.tableRemove(ngram, docID)
 	}
+}
+
+func (c *Collection) IDF(token string) float64 {
+	docCount := len(*c.documents)
+	if docCount == 0 {
+		return 0
+	}
+	locations, exists := (*c.lookupTable)[token]
+	if !exists || len(locations.docIDs) == 0 {
+		return 0
+	}
+	docFrequency := len(locations.docIDs)
+	return math.Log(float64(docCount) / float64(docFrequency))
+}
+
+// DocumentSearch searches for documents that contain n-grams from the provided document.
+// It returns a list of document IDs ordered by TF-IDF relevance scores.
+func (c *Collection) DocumentSearch(document string) []int {
+	normalizedDocument := stringNormalize(document)
+	ngrams := nGramSet(normalizedDocument, c.ngram)
+
+	// Create a map to store the TF-IDF scores for each document.
+	docIDScores := make(map[int]float64)
+
+	// Calculate TF-IDF score for each document that contains n-grams from the query
+	for ngram := range ngrams {
+		idf := c.IDF(ngram)
+		if idf == 0 {
+			continue
+		}
+		if locations, exists := (*c.lookupTable)[ngram]; exists {
+			for docID := range locations.docIDs {
+				// Get the term frequency for this ngram in the document
+				documentText := (*c.documents)[docID]
+				nGramFreq := documentText.termFrequency
+				tf := float64(nGramFreq[ngram])
+
+				// Calculate TF-IDF score for this document and n-gram
+				tfIdfScore := tf * idf
+				docIDScores[docID] += tfIdfScore
+			}
+		}
+	}
+
+	// Convert the map of document scores to a slice of document IDs
+	docIDList := make([]int, 0, len(docIDScores))
+	for docID := range docIDScores {
+		docIDList = append(docIDList, docID)
+	}
+
+	// Sort documents by their TF-IDF scores in descending order
+	sort.Slice(docIDList, func(i, j int) bool {
+		return docIDScores[docIDList[i]] > docIDScores[docIDList[j]]
+	})
+	return docIDList
 }
