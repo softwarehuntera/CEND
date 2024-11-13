@@ -1,101 +1,79 @@
 import Image from "next/image";
+import { FaCircleUser } from "react-icons/fa6";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="grid items-start min-h-screen p-4 gap-8 font-[family-name:var(--font-geist-sans)]">
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <main className="flex flex-col gap-8 items-start w-full">
+
+        {/* Search Input and Icon Container */}
+        <div className="flex w-full items-center gap-4">
+          {/* Search Input */}
+          <input
+            type="text"
+            placeholder="Search..."
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+          />
+
+          {/* User Icon on the Right Side */}
+          <FaCircleUser className="text-5xl text-white ml-auto" />
         </div>
+
+        <div className="grid grid-cols-12 gap-4 w-full">
+
+          {/* Main Section */}
+          <div className="col-span-10 p-4 bg-gray-100 rounded-lg text-black">
+            <h2 className="text-xl font-semibold">Results</h2>
+
+            <div className="grid grid-cols-12 gap-4 w-full">
+
+              {/* Filter Section */}
+              <div className="col-span-1 p-4 bg-orange-500 rounded-lg text-black">
+                <h2 className="text-xl font-semibold">Filter</h2>
+                <p>Location</p>
+                <p>Age</p>
+                <p>Gender</p>
+              </div>
+
+              {/* Data Results Section */}
+              <div className="col-span-11 p-4 bg-gray-500 rounded-lg text-black">
+                <h2 className="text-xl font-semibold">Search Results</h2>
+                <p>Result</p>
+                <p>Result</p>
+                <p>Result</p>
+                <p>Result</p>
+                <p>Result</p>
+                <p>Result</p>
+                <p>Result</p>
+                <p>Result</p>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Sub Section with Two Stacked Divs */}
+          <div className="col-span-2 flex flex-col gap-4">
+            {/* First Stacked Div */}
+            <div className="p-4 bg-gray-200 rounded-lg text-black">
+              <h2 className="text-xl font-semibold">Datasets</h2>
+              <p className="bg-orange-500">Option 1</p>
+              <p>Option 2</p>
+              <p>Option 3</p>
+            </div>
+
+            {/* Second Stacked Div */}
+            <div className="p-4 bg-gray-300 rounded-lg text-black">
+              <h2 className="text-xl font-semibold">Add</h2>
+              <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Add
+              </button>
+            </div>
+          </div>
+
+        </div>
+
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
