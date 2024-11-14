@@ -65,3 +65,6 @@ How do I do this? Well, we can bake in the search algorithm to the database desi
 tf-idf. This could work in a relational database, but I believe the 'finding' of documents will be much more difficult.
 
 
+https://towardsdatascience.com/improving-named-entity-disambiguation-using-entity-relatedness-within-wikipedia-92f400ee5994
+
+http://arxiv.org/pdf/1802.01074

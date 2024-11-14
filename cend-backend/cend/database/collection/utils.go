@@ -27,8 +27,8 @@ func Equal(actual *Collection, expected *Collection) bool {
 		}
 
 		// Check frequency
-		if actualValue.frequency != expectedValue.frequency {
-			LogInfo(fmt.Sprintf("Frequency mismatch for key %v: expected %v, got %v", key, expectedValue.frequency, actualValue.frequency))
+		if actualValue.count != expectedValue.count {
+			LogInfo(fmt.Sprintf("Frequency mismatch for key %v: expected %v, got %v", key, expectedValue.count, actualValue.count))
 			return false
 		}
 

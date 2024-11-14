@@ -1,7 +1,6 @@
 package collection
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -71,9 +70,6 @@ func TestOverlappingDocuments(t *testing.T) {
 	for _, doc := range documents {
 		actualCollection.DocumentAdd(doc)
 	}
-	for key, value := range (*actualCollection.lookupTable) {
-		LogInfo(fmt.Sprintf("Key: %v, Lookup Table: %v", key, value))
-	}
 
 	expectedCollection := overlapCollection1()
 	if !Equal(actualCollection, expectedCollection) {
@@ -97,50 +93,50 @@ func overlapCollection1() (*Collection) {
 	return &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentLocations{
+		lookupTable: &map[string]*DocumentIDs{
 			"apple": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 			"apples": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					2: {},
 				},
 			},
 			"app": {
-				frequency: 2,
+				count: 2,
 				docIDs: map[int]struct{}{
 					1: {},
 					2: {},
 				},
 			},
 			"ppl": {
-				frequency: 2,
+				count: 2,
 				docIDs: map[int]struct{}{
 					1: {},
 					2: {},
 				},
 			},
 			"ple": {
-				frequency: 2,
+				count: 2,
 				docIDs: map[int]struct{}{
 					1: {},
 					2: {},
 				},
 			},
 			"les": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					2: {},
 				},
 			},
 		},
-		documents: &map[int]string{
-			1: "apple",
-			2: "apples",
+		documents: &map[int]Document{
+			1: {doc: "apple"},
+			2: {doc: "apples"},
 		},
 	}
 }
@@ -149,34 +145,34 @@ func overlapCollection2() (*Collection) {
 	return &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentLocations{
+		lookupTable: &map[string]*DocumentIDs{
 			"apple": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 			"app": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 			"ppl": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 			"ple": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 		},
-		documents: &map[int]string{
-			1: "apple",
+		documents: &map[int]Document{
+			1: {doc: "apple"},
 		},
 	}
 }
@@ -187,9 +183,6 @@ func TestOverlappingDocumentsWithDuplicateTrigrams(t *testing.T) {
 
 	for _, doc := range documents {
 		actualCollection.DocumentAdd(doc)
-	}
-	for key, value := range (*actualCollection.lookupTable) {
-		LogInfo(fmt.Sprintf("Key: %v, Lookup Table: %v", key, value))
 	}
 
 	// Define the expected collection state after adding "cargo cart"
@@ -204,87 +197,87 @@ func overlapCollection3() *Collection {
 	return &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentLocations{
+		lookupTable: &map[string]*DocumentIDs{
 			"apple": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 			"apples": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					2: {},
 				},
 			},
 			"app": {
-				frequency: 2,
+				count: 2,
 				docIDs: map[int]struct{}{
 					1: {},
 					2: {},
 				},
 			},
 			"ppl": {
-				frequency: 2,
+				count: 2,
 				docIDs: map[int]struct{}{
 					1: {},
 					2: {},
 				},
 			},
 			"ple": {
-				frequency: 2,
+				count: 2,
 				docIDs: map[int]struct{}{
 					1: {},
 					2: {},
 				},
 			},
 			"les": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					2: {},
 				},
 			},
 			"car": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					3: {},
 				},
 			},
 			"arg": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					3: {},
 				},
 			},
 			"rgo": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					3: {},
 				},
 			},
 			"go ": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					3: {},
 				},
 			},
 			" ca": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					3: {},
 				},
 			},
 			"art": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					3: {},
 				},
 			},
 		},
-		documents: &map[int]string{
-			1: "apple",
-			2: "apples",
-			3: "cargo cart",
+		documents: &map[int]Document{
+			1: {doc: "apple"},
+			2: {doc: "apples"},
+			3: {doc: "cargo cart"},
 		},
 	}
 }
@@ -312,9 +305,9 @@ func TestAddRemoveSingleDocument(t *testing.T) {
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentLocations{
+		lookupTable: &map[string]*DocumentIDs{
 		},
-		documents: &map[int]string{
+		documents: &map[int]Document{
 		},
 	}
 	if !Equal(actualCollection, expectedCollection) {
@@ -334,28 +327,28 @@ func TestAddDuplicateDocument(t *testing.T) {
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentLocations{
+		lookupTable: &map[string]*DocumentIDs{
 			"ban": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 			"ana": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 			"nan": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 		},
-		documents: &map[int]string{
-			1: "banana",
+		documents: &map[int]Document{
+			1: {doc: "banana"},
 		},
 	}
 
@@ -379,16 +372,16 @@ func TestAddLengthNDocument(t *testing.T) {
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentLocations{
+		lookupTable: &map[string]*DocumentIDs{
 			"ban": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 		},
-		documents: &map[int]string{
-			1: "ban",
+		documents: &map[int]Document{
+			1: {doc: "ban"},
 		},
 	}
 
@@ -415,16 +408,16 @@ func TestAddShortDocument(t *testing.T) {
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentLocations{
+		lookupTable: &map[string]*DocumentIDs{
 			"hi": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 		},
-		documents: &map[int]string{
-			1: "hi",
+		documents: &map[int]Document{
+			1:  {doc: "hi"},
 		},
 	}
 	if !Equal(actualCollection, expectedCollection) {
@@ -451,34 +444,34 @@ func TestAddNormalizedDocument(t *testing.T) {
 	expectedCollection := &Collection{
 		name:    "Test Collection with Normalization",
 		ngram:   3,
-		lookupTable: &map[string]*DocumentLocations{
+		lookupTable: &map[string]*DocumentIDs{
 			"hello": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 			"hel": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 			"ell": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 			"llo": {
-				frequency: 1,
+				count: 1,
 				docIDs: map[int]struct{}{
 					1: {},
 				},
 			},
 		},
-		documents: &map[int]string{
-			1: normalizedDoc,
+		documents: &map[int]Document{
+			1: {doc: normalizedDoc},
 		},
 	}
 

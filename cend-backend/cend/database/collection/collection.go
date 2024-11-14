@@ -2,7 +2,6 @@ package collection
 
 import (
 	"fmt"
-	"math"
 	"strings"
 	"unicode"
 
@@ -11,12 +10,12 @@ import (
 
 // TODOs:
 // Test add & delete operations
-// Add lower-case filtration before term storage
+// Add lower-case filtration before token storage
 // Add search functionality
 
-// DocumentLocations stores the locations of documents containing a specific token.
-type DocumentLocations struct {
-	frequency int // number of times the token is found across documents
+// DocumentIDs stores the locations of documents containing a specific token.
+type DocumentIDs struct {
+	count int // number of times the token is found across documents
 	docIDs map[int]struct{} // set of document IDs where the token appears.
 }
 
@@ -25,13 +24,18 @@ type DocumentLocations struct {
 type Collection struct {
 	name         string
 	ngram		int
-	lookupTable  *map[string]*DocumentLocations
+	lookupTable  *map[string]*DocumentIDs
 	documents    *map[int]Document
 }
 
 type Document struct {
 	doc string
-	termFrequency map[string]int
+	tokenFrequency map[string]int
+}
+
+type docScore struct {
+	id    int
+	score float64
 }
 
 // New creates and returns a new Collection with the specified name.
@@ -39,7 +43,7 @@ func New(name string) *Collection {
 	return &Collection{
 		name:        name,
 		ngram:		3,
-		lookupTable: &map[string]*DocumentLocations{},
+		lookupTable: &map[string]*DocumentIDs{},
 		documents:   &map[int]Document{},
 	}
 }
@@ -109,16 +113,16 @@ func nGramFrequency(document string, n int) map[string]int {
 	return nGramFrequency
 }
 
-// removeDocID removes the specified docID from DocumentLocations.
-func (dl *DocumentLocations) removeDocID(docID int) error {
+// removeDocID removes the specified docID from DocumentIDs.
+func (IDs *DocumentIDs) removeDocID(docID int) error {
 
 	// Check if docID exists and delete it if found
-	if _, exists := dl.docIDs[docID]; exists {
-		delete(dl.docIDs, docID)
-		dl.frequency--
+	if _, exists := IDs.docIDs[docID]; exists {
+		delete(IDs.docIDs, docID)
+		IDs.count--
 		
-		if dl.frequency < 0 {
-			return fmt.Errorf("frequency is negative")
+		if IDs.count < 0 {
+			return fmt.Errorf("docCount is negative")
 		}
 		return nil
 	}
@@ -126,43 +130,43 @@ func (dl *DocumentLocations) removeDocID(docID int) error {
 	return fmt.Errorf("docID %d not found", docID)
 }
 
-// addDocID adds a new docID to DocumentLocations.
-func (dl *DocumentLocations) addDocID(docID int) error {
-	if _, exists := dl.docIDs[docID]; exists {
+// addDocID adds a new docID to DocumentIDs.
+func (IDs *DocumentIDs) addDocID(docID int) error {
+	if _, exists := IDs.docIDs[docID]; exists {
 		return fmt.Errorf("docID %d already exists", docID)
 	}
-	dl.frequency++
-	dl.docIDs[docID] = struct{}{}
+	IDs.count++
+	IDs.docIDs[docID] = struct{}{}
 	return nil
 }
 
 // tableAdd adds the token and associated docID to the collection’s
 // lookupTable.
 func (c *Collection) tableAdd(token string, docID int) {
-	if locations, exists := (*c.lookupTable)[token]; exists {
-		locations.addDocID(docID)
+	if ids, exists := (*c.lookupTable)[token]; exists {
+		ids.addDocID(docID)
 	} else {
-		(*c.lookupTable)[token] = &DocumentLocations{
-			frequency: 1,
+		(*c.lookupTable)[token] = &DocumentIDs{
+			count: 1,
 			docIDs:   make(map[int]struct{}),
 		}
 		(*c.lookupTable)[token].docIDs[docID] = struct{}{}
 	}
 }
 
-// tableRemove removes the specified docID from the DocumentLocations
+// tableRemove removes the specified docID from the DocumentIDs
 // entry for the token in the lookupTable.
 func (c *Collection) tableRemove(token string, docID int) error {
-	locations, exists := (*c.lookupTable)[token]
+	ids, exists := (*c.lookupTable)[token]
 	if !exists {
 		return fmt.Errorf("token not found")
 	}
-	locations.removeDocID(docID)
+	ids.removeDocID(docID)
 
-	if len(locations.docIDs) == 0 {
+	if len(ids.docIDs) == 0 {
 		delete(*c.lookupTable, token)
 	} else {
-		(*c.lookupTable)[token] = locations
+		(*c.lookupTable)[token] = ids
 	}
 	return nil
 	
@@ -172,15 +176,11 @@ func (c *Collection) tableRemove(token string, docID int) error {
 // collection.
 func (c *Collection) DocumentID(document string) *int {
 	if _, exists := (*c.lookupTable)[document]; !exists {
-		LogInfo("Document not found in lookup table.")
 		return nil
 	}
-	locations := (*c.lookupTable)[document]
-	LogInfo(fmt.Sprintf("locations: %v", locations))
-	LogInfo(fmt.Sprintf("documents: %v", *c.documents))
-	for docID := range locations.docIDs {
+	ids := (*c.lookupTable)[document]
+	for docID := range ids.docIDs {
 		actualDocument := (*c.documents)[docID]
-		LogInfo(fmt.Sprintf("Actual document %s", actualDocument))
 		if actualDocument.doc == document {
 			return &docID
 		}
@@ -203,7 +203,7 @@ func (c *Collection) DocumentAdd(document string) {
 	}
 
 	normalizedDocument := stringNormalize(document)
-	(*c.documents)[docID] = Document{doc: normalizedDocument, termFrequency: nGramFrequency(normalizedDocument, c.ngram)}
+	(*c.documents)[docID] = Document{doc: normalizedDocument, tokenFrequency: nGramFrequency(normalizedDocument, c.ngram)}
 	if len(normalizedDocument) != c.ngram {
 		c.tableAdd(normalizedDocument, docID)
 	}
@@ -231,62 +231,23 @@ func (c *Collection) DocumentRemove(document string) {
 		c.tableRemove(document, docID)
 	}
 	ngrams := nGramSet(document, c.ngram)
+
 	for ngram := range ngrams {
 		c.tableRemove(ngram, docID)
 	}
 }
 
-func (c *Collection) IDF(token string) float64 {
-	docCount := len(*c.documents)
-	if docCount == 0 {
-		return 0
-	}
-	locations, exists := (*c.lookupTable)[token]
-	if !exists || len(locations.docIDs) == 0 {
-		return 0
-	}
-	docFrequency := len(locations.docIDs)
-	return math.Log(float64(docCount) / float64(docFrequency))
-}
-
-// DocumentSearch searches for documents that contain n-grams from the provided document.
-// It returns a list of document IDs ordered by TF-IDF relevance scores.
-func (c *Collection) DocumentSearch(document string) []int {
-	normalizedDocument := stringNormalize(document)
-	ngrams := nGramSet(normalizedDocument, c.ngram)
-
-	// Create a map to store the TF-IDF scores for each document.
-	docIDScores := make(map[int]float64)
-
-	// Calculate TF-IDF score for each document that contains n-grams from the query
+// RelevantDocumentIDs returns a set of document IDs that contain at least one n-gram from the provided document.
+func (c *Collection) RelevantDocumentIDs(document string) map[int]struct{} {
+	documentIDs := make(map[int]struct{})
+	ngrams := nGramSet(document, c.ngram)
 	for ngram := range ngrams {
-		idf := c.IDF(ngram)
-		if idf == 0 {
-			continue
-		}
-		if locations, exists := (*c.lookupTable)[ngram]; exists {
-			for docID := range locations.docIDs {
-				// Get the term frequency for this ngram in the document
-				documentText := (*c.documents)[docID]
-				nGramFreq := documentText.termFrequency
-				tf := float64(nGramFreq[ngram])
-
-				// Calculate TF-IDF score for this document and n-gram
-				tfIdfScore := tf * idf
-				docIDScores[docID] += tfIdfScore
+		if ids, exists := (*c.lookupTable)[ngram]; exists {
+			for docID := range ids.docIDs {
+				documentIDs[docID] = struct{}{}
 			}
 		}
 	}
-
-	// Convert the map of document scores to a slice of document IDs
-	docIDList := make([]int, 0, len(docIDScores))
-	for docID := range docIDScores {
-		docIDList = append(docIDList, docID)
-	}
-
-	// Sort documents by their TF-IDF scores in descending order
-	sort.Slice(docIDList, func(i, j int) bool {
-		return docIDScores[docIDList[i]] > docIDScores[docIDList[j]]
-	})
-	return docIDList
+	return documentIDs
 }
+
