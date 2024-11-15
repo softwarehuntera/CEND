@@ -25,7 +25,7 @@ export default function Home() {
     // Add more mock results as needed
   ];
 
-  const [searchResults] = useState(mockResults);
+  const [searchResults, setSearchResults] = useState(mockResults);
   const [filteredResults, setFilteredResults] = useState(mockResults);
   const [filters, setFilters] = useState<{ [key: string]: string }>({});
 
