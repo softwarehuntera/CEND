@@ -27,23 +27,24 @@ export default function Home() {
 
   const [searchResults, setSearchResults] = useState(mockResults);
   const [filteredResults, setFilteredResults] = useState(mockResults);
-  const [filters, setFilters] = useState<{ [key: string]: string }>({});
+  const [filters, setFilters] = useState<{ [key: string]: Set<string> }>({});
 
-  const handleFilterChange = (newFilters: { [key: string]: string }) => {
+  const handleFilterChange = (newFilters: { [key: string]: Set<string> }) => {
     setFilters(newFilters);
     applyFilters(newFilters);
   };
 
-  const applyFilters = (activeFilters: { [key: string]: string }) => {
+  const applyFilters = (activeFilters: { [key: string]: Set<string> }) => {
     if (Object.keys(activeFilters).length === 0) {
       setFilteredResults(searchResults);
       return;
     }
 
     const results = searchResults.filter((item) =>
-      Object.entries(activeFilters).every(
-        ([field, value]) => item[field] === value
-      )
+      Object.entries(activeFilters).every(([field, values]) => {
+        // Include item if the field is not in filters or if the item's value is in the selected values
+        return values.has(item[field]);
+      })
     );
 
     setFilteredResults(results);
