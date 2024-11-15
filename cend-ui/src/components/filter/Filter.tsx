@@ -3,11 +3,11 @@ import { useState } from 'react';
 
 interface FilterProps {
   searchResults: any[];
-  onFilterChange: (filters: { [key: string]: string }) => void;
+  onFilterChange: (filters: { [key: string]: Set<string> }) => void;
 }
 
 export default function Filter({ searchResults, onFilterChange }: FilterProps) {
-  const [selectedFilters, setSelectedFilters] = useState<{ [key: string]: string }>({});
+  const [selectedFilters, setSelectedFilters] = useState<{ [key: string]: Set<string> }>({});
 
   // Extract unique fields and values
   const filterOptions = searchResults.reduce((acc, result) => {
@@ -22,14 +22,24 @@ export default function Filter({ searchResults, onFilterChange }: FilterProps) {
 
   const handleFilterChange = (field: string, value: string) => {
     const newFilters = { ...selectedFilters };
-    if (value === '') {
-      delete newFilters[field]; // Deselect the filter
+    if (!newFilters[field]) newFilters[field] = new Set();
+
+    if (value === 'ALL') {
+      newFilters[field].clear();
+      delete newFilters[field];
     } else {
-      newFilters[field] = value; // Set the new selection
+      if (newFilters[field].has(value)) {
+        newFilters[field].delete(value);
+        if (newFilters[field].size === 0) {
+          delete newFilters[field];
+        }
+      } else {
+        newFilters[field].add(value);
+      }
     }
 
     setSelectedFilters(newFilters);
-    onFilterChange(newFilters);
+    onFilterChange(newFilters); // Now called after state update
   };
 
   return (
@@ -39,25 +49,23 @@ export default function Filter({ searchResults, onFilterChange }: FilterProps) {
         <div key={field}>
           <h3 className="font-semibold capitalize">{field}</h3>
 
-          {/* Optional "None" option */}
-          <label key={`${field}-none`} className="block">
+          {/* "ALL" option */}
+          <label className="block">
             <input
-              type="radio"
-              name={field}
+              type="checkbox"
               className="mr-2"
               checked={!selectedFilters[field]}
-              onChange={() => handleFilterChange(field, '')}
+              onChange={() => handleFilterChange(field, 'ALL')}
             />
-            None
+            All
           </label>
 
           {[...(values as Set<string>)].map((value) => (
             <label key={value} className="block">
               <input
-                type="radio"
-                name={field}
+                type="checkbox"
                 className="mr-2"
-                checked={selectedFilters[field] === value}
+                checked={selectedFilters[field]?.has(value) || false}
                 onChange={() => handleFilterChange(field, value)}
               />
               {value}
