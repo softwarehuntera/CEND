@@ -33,9 +33,10 @@ type Document struct {
 	tokenFrequency map[string]int
 }
 
-type docScore struct {
-	id    int
-	score float64
+type SearchResult struct {
+	ID int `json:"id"`
+	Document string  `json:"document"`
+	Score    float64 `json:"score"`
 }
 
 // New creates and returns a new Collection with the specified name.
@@ -194,16 +195,15 @@ func (c *Collection) DocumentExists(document string) bool {
 }
 
 // DocumentAdd adds a document; its n-grams are tokenized and stored in the lookupTable.
-func (c *Collection) DocumentAdd(document string) {
+func (c *Collection) DocumentAdd(document string) error {
 	docID := len(*c.documents) + 1
 
 	if c.DocumentExists(document) {
-		LogInfo(fmt.Sprintf("Cannot add document that already exists. document=%s", document))
-		return // do not add duplicate documents because this is a database
+		return fmt.Errorf("cannot add document that already exists: document=%s", document)
 	}
-
 	normalizedDocument := stringNormalize(document)
 	(*c.documents)[docID] = Document{doc: normalizedDocument, tokenFrequency: nGramFrequency(normalizedDocument, c.ngram)}
+
 	if len(normalizedDocument) != c.ngram {
 		c.tableAdd(normalizedDocument, docID)
 	}
@@ -212,17 +212,18 @@ func (c *Collection) DocumentAdd(document string) {
     for ngram := range ngrams {
         c.tableAdd(ngram, docID)
     }
+	return nil
 }
 
 // DocumentRemove removes a document from the collection. If the
 // document exists, it is removed from documents and its associated
 // tokens are removed from the lookupTable.
-func (c *Collection) DocumentRemove(document string) {
+func (c *Collection) DocumentRemove(document string) error {
 	docIDptr := c.DocumentID(document)
 	if docIDptr == nil {
-		LogInfo(fmt.Sprintf("Cannot remove document that does not exist. document=%s", document))
-		return
+		return fmt.Errorf("cannot remove document that does not exist. document=%s", document)
 	}
+
 	docID := *docIDptr
 
 	delete(*c.documents, docID)
@@ -235,6 +236,16 @@ func (c *Collection) DocumentRemove(document string) {
 	for ngram := range ngrams {
 		c.tableRemove(ngram, docID)
 	}
+	return nil
+}
+
+// DocumentList retrieves a list of documents from the collection.
+func (c *Collection) DocumentList() []string {
+	documents := []string{}
+	for _, value := range *c.documents {
+		documents = append(documents, value.doc)
+	}
+	return documents
 }
 
 // RelevantDocumentIDs returns a set of document IDs that contain at least one n-gram from the provided document.

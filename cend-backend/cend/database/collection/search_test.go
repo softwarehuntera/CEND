@@ -15,6 +15,7 @@ func TestDocumentSearch(t *testing.T) {
 		"the slow green turtle crawls under the lazy cat",
 		"a fast red fox runs past the lazy dog",
 		"this is a webpage about cats and dogs",
+		"I cant stop quoting memes",
 	}
 
 	for _, doc := range docs {
@@ -22,14 +23,14 @@ func TestDocumentSearch(t *testing.T) {
 	}
 
 	// Search for a document similar to docs[0]
-	searchDoc := "cat website"
+	searchDoc := "sophie keeps saying memes please help"
 	results := collection.DocumentSearch(searchDoc)
 
 	// Log the search results with document content
 	var logMsg string
 	for i, result := range results {
-		doc := (*collection.documents)[result.id].doc
-		logMsg += fmt.Sprintf("\nRank %d (Score: %.4f): %s", i+1, result.score, doc)
+		doc := (*collection.documents)[result.ID].doc
+		logMsg += fmt.Sprintf("\nRank %d (Score: %.4f): %s", i+1, result.Score, doc)
 	}
 	LogInfo("Search Results for: " + searchDoc + logMsg)
 	t.Errorf("Test")
@@ -58,8 +59,8 @@ func TestTechnicalDocumentSearch(t *testing.T) {
 	// Log the search results with document content
 	var logMsg string
 	for i, result := range results {
-		doc := (*collection.documents)[result.id].doc
-		logMsg += fmt.Sprintf("\nRank %d (Score: %.4f): %s", i+1, result.score, doc)
+		doc := (*collection.documents)[result.ID].doc
+		logMsg += fmt.Sprintf("\nRank %d (Score: %.4f): %s", i+1, result.Score, doc)
 	}
 	LogInfo("Search Results for: " + searchDoc + logMsg)
 	t.Errorf("Test")
