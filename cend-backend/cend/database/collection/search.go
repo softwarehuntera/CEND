@@ -2,21 +2,21 @@ package collection
 
 import (
 	"math"
-	"sort"
+	"slices"
 )
 
 // DocumentSearch finds similar documents
-func (c *Collection) DocumentSearch(searchDoc string) []docScore {
+func (c *Collection) DocumentSearch(searchDoc string) []SearchResult {
 	searchVector := c.vectorTFIDF(searchDoc)
    
-	similarities := make(map[int]float64)
+	searchResult := []SearchResult{}
 	for docID := range c.RelevantDocumentIDs(searchDoc) {
 		matchDoc := (*c.documents)[docID]
 		matchVector := c.vectorTFIDF(matchDoc.doc)
-		similarities[docID] = dotProduct(searchVector, matchVector)
+		searchResult = append(searchResult, SearchResult{docID, matchDoc.doc, dotProduct(searchVector, matchVector)})
 	}
-	matches := sortScores(similarities)
-	return matches
+	sortSearchResult(searchResult)
+	return searchResult
 }
 
 func dotProduct(v1, v2 map[string]float64) float64 {
@@ -29,16 +29,19 @@ func dotProduct(v1, v2 map[string]float64) float64 {
 	return dotProduct
 }
 
-func sortScores(scores map[int]float64) []docScore {
-	
-	var sorted []docScore
-	for id, score := range scores {
-		sorted = append(sorted, docScore{id, score})
+
+
+func sortSearchResult(searchResult []SearchResult) {
+	compareByScoreDesc := func(a, b SearchResult) int {
+		if a.Score > b.Score {
+			return -1
+		}
+		if a.Score < b.Score {
+			return 1
+		}
+		return 0
 	}
-	sort.Slice(sorted, func(i, j int) bool {
-		return sorted[i].score > sorted[j].score
-	})
-	return sorted
+	slices.SortFunc(searchResult, compareByScoreDesc)
 }
 
 func (c *Collection) IDF(token string) float64 {
