@@ -7,7 +7,7 @@ import (
 // TestDocumentAdd tests that documents are correctly added to the collection,
 // including adding n-grams to the lookup table.
 func TestDocumentAdd(t *testing.T) {
-	collection := New("Test Collection")
+	collection := New("Test Collection", "./test-data/test-collection")
 
 	// Add a document
 	document := "example"
@@ -36,7 +36,7 @@ func TestDocumentAdd(t *testing.T) {
 // TestDocumentRemove tests that documents are correctly removed from the collection,
 // including removing associated tokens from the lookup table.
 func TestDocumentRemove(t *testing.T) {
-	collection := New("Test Collection")
+	collection := New("Test Collection", "./test-data/test-collection")
 
 	// Add and then remove a document
 	document := "example"
@@ -64,7 +64,7 @@ func TestDocumentRemove(t *testing.T) {
 }
 
 func TestOverlappingDocuments(t *testing.T) {
-	actualCollection := New("Test Collection")
+	actualCollection := New("Test Collection", "./test-data/test-collection")
 	documents := []string{"apple", "apples"}
 
 	for _, doc := range documents {
@@ -178,7 +178,7 @@ func overlapCollection2() (*Collection) {
 }
 
 func TestOverlappingDocumentsWithDuplicateTrigrams(t *testing.T) {
-	actualCollection := New("Test Collection")
+	actualCollection := New("Test Collection", "./test-data/test-collection")
 	documents := []string{"apple", "apples", "cargo cart"}
 
 	for _, doc := range documents {
@@ -284,7 +284,7 @@ func overlapCollection3() *Collection {
 
 
 func TestAddRemoveSingleDocument(t *testing.T) {
-	actualCollection := New("Test Collection")
+	actualCollection := New("Test Collection", "./test-data/test-collection")
 
 	// Add a single document
 	doc := "apple"
@@ -317,7 +317,7 @@ func TestAddRemoveSingleDocument(t *testing.T) {
 
 
 func TestAddDuplicateDocument(t *testing.T) {
-	actualCollection := New("Test Collection")
+	actualCollection := New("Test Collection", "./test-data/test-collection")
 
 	// Add the document twice
 	doc := "banana"
@@ -363,7 +363,7 @@ func TestAddDuplicateDocument(t *testing.T) {
 
 
 func TestAddLengthNDocument(t *testing.T) {
-	actualCollection := New("Test Collection")
+	actualCollection := New("Test Collection", "./test-data/test-collection")
 
 	// Add the document twice
 	doc := "ban"
@@ -395,7 +395,7 @@ func TestAddLengthNDocument(t *testing.T) {
 }
 
 func TestAddShortDocument(t *testing.T) {
-	actualCollection := New("Test Collection")
+	actualCollection := New("Test Collection", "./test-data/test-collection")
 
 	// Add a document shorter than n-gram length
 	doc := "hi" // shorter than the 3-character n-gram length
@@ -426,7 +426,7 @@ func TestAddShortDocument(t *testing.T) {
 }
 
 func TestAddNormalizedDocument(t *testing.T) {
-	actualCollection := New("Test Collection with Normalization")
+	actualCollection := New("Test Collection with Normalization", "./test-data/test-collection")
 
 	// Document with mixed case and accents
 	doc := "HÉllo"

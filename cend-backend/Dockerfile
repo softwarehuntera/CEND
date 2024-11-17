@@ -7,17 +7,17 @@ ENV CGO_ENABLED 0
 ENV GOPATH /go
 ENV GOCACHE /go-build
 
-COPY go.mod go.sum ./
+COPY cend/go.mod cend/go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod/cache \
     go mod download
 
-COPY . .
+COPY ./cend/ .
 
 RUN --mount=type=cache,target=/go/pkg/mod/cache \
     --mount=type=cache,target=/go-build \
-    go build -o bin/backend main.go
+    go build -o bin/cend-backend/cend main.go
 
-CMD ["/code/bin/backend"]
+CMD ["/code/bin/cend-backend/cend"]
 
 FROM builder as dev-envs
 
@@ -37,5 +37,5 @@ COPY --from=gloursdocker/docker / /
 CMD ["go", "run", "main.go"]
 
 FROM scratch
-COPY --from=builder /code/bin/backend /usr/local/bin/backend
-CMD ["/usr/local/bin/backend"]
+COPY --from=builder /code/bin/cend-backend/cend /usr/local/bin/cend-backend/cend
+CMD ["/usr/local/bin/cend-backend/cend"]
