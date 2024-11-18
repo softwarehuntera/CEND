@@ -15,6 +15,7 @@ import (
 
 type SearchRequest struct {
 	Query string `json:"query"`
+	Filters   []string `json:"filters"`
 }
 
 type DeleteRequest struct {
@@ -30,7 +31,6 @@ type SearchResult struct {
 	Score    float64 `json:"score"`
 }
 
-
 func searchHandler(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -44,14 +44,17 @@ func searchHandler(db *database.DB) http.HandlerFunc {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-
+		fmt.Printf("Incoming search request: %v", req)
+		fmt.Printf("Query: %v", req.Query)
 		// Get the docs collection
 		docs, err := db.GetCollection("docs")
 		if err != nil {
 			http.Error(w, "Error getting collection", http.StatusInternalServerError)
 			return
 		}
+		fmt.Printf("Collection: %v", docs.DocumentList())
 		searchResults := docs.DocumentSearch(req.Query)
+		fmt.Printf("Search results: %v", searchResults)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(searchResults)
 	}
@@ -176,8 +179,6 @@ func main() {
 		collection.DocumentAdd(doc)
 	}
 
-	// Add collection to database
-	db.AddCollection("docs")
 
 	log.Print("Setting up routes...")
 	r := mux.NewRouter()
