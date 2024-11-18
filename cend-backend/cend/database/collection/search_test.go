@@ -6,7 +6,7 @@ import (
 )
 
 func TestDocumentSearch(t *testing.T) {
-	collection := New("Test Collection")
+	collection := New("Test Collection", "./test-data/test-collection")
 
 	// Add documents with varying degrees of similarity
 	docs := []string{
@@ -37,7 +37,7 @@ func TestDocumentSearch(t *testing.T) {
 }
 
 func TestTechnicalDocumentSearch(t *testing.T) {
-	collection := New("Technical Documentation Collection")
+	collection := New("Technical Documentation Collection", "./test-data/test-collection")
 
 	// Add technical documentation style content
 	docs := []string{

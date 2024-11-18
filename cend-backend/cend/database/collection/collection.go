@@ -22,6 +22,7 @@ type DocumentIDs struct {
 // Collection represents a collection of documents and provides methods
 // for managing tokenized entries and tracking document locations.
 type Collection struct {
+	Path		 string
 	name         string
 	ngram		int
 	lookupTable  *map[string]*DocumentIDs
@@ -40,8 +41,9 @@ type SearchResult struct {
 }
 
 // New creates and returns a new Collection with the specified name.
-func New(name string) *Collection {
+func New(name, path string) *Collection {
 	return &Collection{
+		Path:		path,
 		name:        name,
 		ngram:		3,
 		lookupTable: &map[string]*DocumentIDs{},

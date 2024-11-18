@@ -2,7 +2,6 @@ package main
 
 import (
 	"cend/database"
-	"cend/database/collection"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -16,6 +15,7 @@ import (
 
 type SearchRequest struct {
 	Query string `json:"query"`
+	Filters   []string `json:"filters"`
 }
 
 type DeleteRequest struct {
@@ -33,6 +33,7 @@ type SearchResult struct {
 
 func searchHandler(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		if r.Method != http.MethodPost {
 			http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
 			return
@@ -43,14 +44,17 @@ func searchHandler(db *database.DB) http.HandlerFunc {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-
+		fmt.Printf("Incoming search request: %v", req)
+		fmt.Printf("Query: %v", req.Query)
 		// Get the docs collection
 		docs, err := db.GetCollection("docs")
 		if err != nil {
 			http.Error(w, "Error getting collection", http.StatusInternalServerError)
 			return
 		}
+		fmt.Printf("Collection: %v", docs.DocumentList())
 		searchResults := docs.DocumentSearch(req.Query)
+		fmt.Printf("Search results: %v", searchResults)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(searchResults)
 	}
@@ -58,6 +62,7 @@ func searchHandler(db *database.DB) http.HandlerFunc {
 
 func addHandler(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		if r.Method != http.MethodPost {
 			http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
 			return
@@ -68,7 +73,7 @@ func addHandler(db *database.DB) http.HandlerFunc {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-		
+
 		// Get the docs collection
 		docs, err := db.GetCollection("docs")
 		if err != nil {
@@ -97,7 +102,7 @@ func removeHandler(db *database.DB) http.HandlerFunc {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-		
+
 		// Get the docs collection
 		docs, err := db.GetCollection("docs")
 		if err != nil {
@@ -116,6 +121,7 @@ func removeHandler(db *database.DB) http.HandlerFunc {
 
 func queryHandler(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		if r.Method != http.MethodGet {
 			http.Error(w, "Only GET method is allowed", http.StatusMethodNotAllowed)
 			return
@@ -126,7 +132,7 @@ func queryHandler(db *database.DB) http.HandlerFunc {
 		// 	http.Error(w, "Invalid request body", http.StatusBadRequest)
 		// 	return
 		// }
-		
+
 		// Get the docs collection
 		docs, err := db.GetCollection("docs")
 		if err != nil {
@@ -140,20 +146,26 @@ func queryHandler(db *database.DB) http.HandlerFunc {
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	basicInfo := map[string]string {
+	// Set CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	basicInfo := map[string]string{
 		"greeting": "Welcome to Cend!",
-		"name": "Cend API",
-		"version": "1.0.0",
+		"name":     "Cend API",
+		"version":  "1.0.0",
 	}
 	json.NewEncoder(w).Encode(basicInfo)
 }
 
 func main() {
 	log.Print("Preparing database...")
-	
+
 	// Create database and collection
 	db := database.New("test-db")
-	docs := collection.New("Documentation Collection")
+	db.AddCollection("docs")
+	collection, _ := db.GetCollection("docs")
 
 	// Add sample documents
 	sampleDocs := []string{
@@ -164,12 +176,10 @@ func main() {
 		"Configure Docker daemon settings in the daemon.json configuration file",
 	}
 	for _, doc := range sampleDocs {
-		docs.DocumentAdd(doc)
+		collection.DocumentAdd(doc)
 	}
 
-	// Add collection to database
-	db.AddCollection("docs", docs)
-	
+
 	log.Print("Setting up routes...")
 	r := mux.NewRouter()
 	r.HandleFunc("/", rootHandler)
