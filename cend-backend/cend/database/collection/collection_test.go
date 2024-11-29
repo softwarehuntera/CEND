@@ -1,6 +1,8 @@
 package collection
 
 import (
+	"cend/database/tokenizer"
+	"cend/database/document"
 	"testing"
 )
 
@@ -25,7 +27,7 @@ func TestDocumentAdd(t *testing.T) {
 	}
 
 	// Verify n-grams are stored in lookup table
-	ngrams := nGrams(document, collection.ngram)
+	ngrams := tokenizer.NGrams(document, collection.ngram)
 	for _, ngram := range ngrams {
 		if _, exists := (*collection.lookupTable)[ngram]; !exists {
 			t.Errorf("Expected n-gram '%s' to be in the lookup table after adding document '%s'", ngram, document)
@@ -55,7 +57,7 @@ func TestDocumentRemove(t *testing.T) {
 	}
 
 	// Verify n-grams are removed from lookup table
-	ngrams := nGrams(document, collection.ngram)
+	ngrams := tokenizer.NGrams(document, collection.ngram)
 	for _, ngram := range ngrams {
 		if _, exists := (*collection.lookupTable)[ngram]; exists {
 			t.Errorf("Expected n-gram '%s' to be removed from the lookup table after removing document '%s'", ngram, document)
@@ -93,43 +95,43 @@ func overlapCollection1() (*Collection) {
 	return &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentIDs{
+		lookupTable: &map[string]*document.DocumentIDs{
 			"apple": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
 			"apples": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					2: {},
 				},
 			},
 			"app": {
-				count: 2,
-				docIDs: map[int]struct{}{
+				Count: 2,
+				Ids: map[int]struct{}{
 					1: {},
 					2: {},
 				},
 			},
 			"ppl": {
-				count: 2,
-				docIDs: map[int]struct{}{
+				Count: 2,
+				Ids: map[int]struct{}{
 					1: {},
 					2: {},
 				},
 			},
 			"ple": {
-				count: 2,
-				docIDs: map[int]struct{}{
+				Count: 2,
+				Ids: map[int]struct{}{
 					1: {},
 					2: {},
 				},
 			},
 			"les": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					2: {},
 				},
 			},
@@ -145,28 +147,28 @@ func overlapCollection2() (*Collection) {
 	return &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentIDs{
+		lookupTable: &map[string]*document.DocumentIDs{
 			"apple": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
 			"app": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
 			"ppl": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
 			"ple": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
@@ -197,79 +199,79 @@ func overlapCollection3() *Collection {
 	return &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentIDs{
+		lookupTable: &map[string]*document.DocumentIDs{
 			"apple": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
 			"apples": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					2: {},
 				},
 			},
 			"app": {
-				count: 2,
-				docIDs: map[int]struct{}{
+				Count: 2,
+				Ids: map[int]struct{}{
 					1: {},
 					2: {},
 				},
 			},
 			"ppl": {
-				count: 2,
-				docIDs: map[int]struct{}{
+				Count: 2,
+				Ids: map[int]struct{}{
 					1: {},
 					2: {},
 				},
 			},
 			"ple": {
-				count: 2,
-				docIDs: map[int]struct{}{
+				Count: 2,
+				Ids: map[int]struct{}{
 					1: {},
 					2: {},
 				},
 			},
 			"les": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					2: {},
 				},
 			},
 			"car": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					3: {},
 				},
 			},
 			"arg": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					3: {},
 				},
 			},
 			"rgo": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					3: {},
 				},
 			},
 			"go ": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					3: {},
 				},
 			},
 			" ca": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					3: {},
 				},
 			},
 			"art": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					3: {},
 				},
 			},
@@ -305,7 +307,7 @@ func TestAddRemoveSingleDocument(t *testing.T) {
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentIDs{
+		lookupTable: &map[string]*document.DocumentIDs{
 		},
 		documents: &map[int]Document{
 		},
@@ -327,22 +329,22 @@ func TestAddDuplicateDocument(t *testing.T) {
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentIDs{
+		lookupTable: &map[string]*document.DocumentIDs{
 			"ban": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
 			"ana": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
 			"nan": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
@@ -372,10 +374,10 @@ func TestAddLengthNDocument(t *testing.T) {
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentIDs{
+		lookupTable: &map[string]*document.DocumentIDs{
 			"ban": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
@@ -408,10 +410,10 @@ func TestAddShortDocument(t *testing.T) {
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
-		lookupTable: &map[string]*DocumentIDs{
+		lookupTable: &map[string]*document.DocumentIDs{
 			"hi": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
@@ -444,28 +446,28 @@ func TestAddNormalizedDocument(t *testing.T) {
 	expectedCollection := &Collection{
 		name:    "Test Collection with Normalization",
 		ngram:   3,
-		lookupTable: &map[string]*DocumentIDs{
+		lookupTable: &map[string]*document.DocumentIDs{
 			"hello": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
 			"hel": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
 			"ell": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},
 			"llo": {
-				count: 1,
-				docIDs: map[int]struct{}{
+				Count: 1,
+				Ids: map[int]struct{}{
 					1: {},
 				},
 			},

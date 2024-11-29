@@ -3,6 +3,7 @@ package collection
 import (
 	"math"
 	"slices"
+	"cend/database/tokenizer"
 )
 
 // DocumentSearch finds similar documents
@@ -50,17 +51,17 @@ func (c *Collection) IDF(token string) float64 {
 		return 0
 	}
 	ids, exists := (*c.lookupTable)[token]
-	if !exists || ids.count == 0 {
+	if !exists || ids.Count == 0 {
 		return 0
 	}
-	return math.Log(float64(docCount) / float64(ids.count))
+	return math.Log(float64(docCount) / float64(ids.Count))
 }
 
 func (c *Collection) vectorTFIDF(document string) map[string]float64 {
 	docIDptr := c.DocumentID(document)
 	var tokenFrequency map[string]int
 	if docIDptr == nil {
-		tokenFrequency = nGramFrequency(document, c.ngram)
+		tokenFrequency = tokenizer.NGramFrequency(document, c.ngram)
 	} else {
 		docID := *docIDptr
 		tokenFrequency = (*c.documents)[docID].tokenFrequency

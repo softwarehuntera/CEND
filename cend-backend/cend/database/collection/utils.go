@@ -27,19 +27,19 @@ func Equal(actual *Collection, expected *Collection) bool {
 		}
 
 		// Check frequency
-		if actualValue.count != expectedValue.count {
-			LogInfo(fmt.Sprintf("Frequency mismatch for key %v: expected %v, got %v", key, expectedValue.count, actualValue.count))
+		if actualValue.Count != expectedValue.Count {
+			LogInfo(fmt.Sprintf("Frequency mismatch for key %v: expected %v, got %v", key, expectedValue.Count, actualValue.Count))
 			return false
 		}
 
 		// Check document IDs
-		if len(actualValue.docIDs) != len(expectedValue.docIDs) {
-			LogInfo(fmt.Sprintf("DocIDs mismatch for key %v: expected %v, got %v", key, expectedValue.docIDs, actualValue.docIDs))
+		if len(actualValue.Ids) != len(expectedValue.Ids) {
+			LogInfo(fmt.Sprintf("Ids mismatch for key %v: expected %v, got %v", key, expectedValue.Ids, actualValue.Ids))
 			return false
 		}
-		for docID := range expectedValue.docIDs {
-			if _, exists := actualValue.docIDs[docID]; !exists {
-				LogInfo(fmt.Sprintf("Expected docID %v for key %v not found in actual docIDs", docID, key))
+		for docID := range expectedValue.Ids {
+			if _, exists := actualValue.Ids[docID]; !exists {
+				LogInfo(fmt.Sprintf("Expected docID %v for key %v not found in actual Ids", docID, key))
 				return false
 			}
 		}
