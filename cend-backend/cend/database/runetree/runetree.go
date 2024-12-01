@@ -30,7 +30,10 @@ func New() RuneTree {
 func (rt *RuneTree) Search(text string) []RuneTreeNode {
 	nGrams := tokenizer.NGrams(text, 3)
 	
-	// convert text to tokens
+	matches := []string
+	for _, nGram := range nGrams {
+
+	}
 	// sort by tokens and weight by frequency
 
 	// search recursively, giving all search tokens that match the prefix string
