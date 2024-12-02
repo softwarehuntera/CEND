@@ -2,6 +2,9 @@ package document
 
 import "fmt"
 
+// TODO: Implement document index store
+
+
 // DocumentIDs stores the locations of documents containing a specific token.
 type DocumentIDs struct {
 	Count int // number of times the token is found across documents
