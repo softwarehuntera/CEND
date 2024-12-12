@@ -1,6 +1,10 @@
 import { useState, ChangeEvent, KeyboardEvent } from "react";
 
-export default function SearchBar() {
+interface SearchBarProps {
+    onSearchResults: (results: any[]) => void;
+}
+
+export default function SearchBar({ onSearchResults }: SearchBarProps) {
     const [inputValue, setInputValue] = useState<string>("");
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -27,7 +31,8 @@ export default function SearchBar() {
             }
 
             const data = await response.json();
-            console.log("Search results:", data); // handle the response as needed
+            // pass data back to parent component
+            onSearchResults(data);
         } catch (error) {
             console.error("Fetch error:", error);
             alert("An error occurred while fetching search results.");
@@ -41,7 +46,7 @@ export default function SearchBar() {
     };
 
     return (
-        <div className="bg-white">
+        <div className="bg-black rounded-lg">
             <div className="flex space-x-2">
                 <input
                     type="text"
