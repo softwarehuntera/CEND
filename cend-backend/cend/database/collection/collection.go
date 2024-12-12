@@ -6,6 +6,8 @@ import (
 	"unicode"
 
 	"golang.org/x/text/unicode/norm"
+
+	"cend/database/collection/documents"
 )
 
 // TODOs:
@@ -26,13 +28,10 @@ type Collection struct {
 	name         string
 	ngram		int
 	lookupTable  *map[string]*DocumentIDs
-	documents    *map[int]Document
+	documents    *documents.DocumentCollection
 }
 
-type Document struct {
-	doc string
-	tokenFrequency map[string]int
-}
+
 
 type SearchResult struct {
 	ID int `json:"id"`
@@ -42,12 +41,13 @@ type SearchResult struct {
 
 // New creates and returns a new Collection with the specified name.
 func New(name, path string) *Collection {
+
 	return &Collection{
 		Path:		path,
 		name:        name,
 		ngram:		3,
 		lookupTable: &map[string]*DocumentIDs{},
-		documents:   &map[int]Document{},
+		documents:   documents.NewDocumentCollection(),
 	}
 }
 
@@ -183,8 +183,8 @@ func (c *Collection) DocumentID(document string) *int {
 	}
 	ids := (*c.lookupTable)[document]
 	for docID := range ids.docIDs {
-		actualDocument := (*c.documents)[docID]
-		if actualDocument.doc == document {
+		actualDocument := (*c.documents).Get(docID)
+		if actualDocument.String() == document {
 			return &docID
 		}
 	}
@@ -198,13 +198,16 @@ func (c *Collection) DocumentExists(document string) bool {
 
 // DocumentAdd adds a document; its n-grams are tokenized and stored in the lookupTable.
 func (c *Collection) DocumentAdd(document string) error {
-	docID := len(*c.documents) + 1
 
 	if c.DocumentExists(document) {
 		return fmt.Errorf("cannot add document that already exists: document=%s", document)
 	}
 	normalizedDocument := stringNormalize(document)
-	(*c.documents)[docID] = Document{doc: normalizedDocument, tokenFrequency: nGramFrequency(normalizedDocument, c.ngram)}
+	x := nGramFrequency(normalizedDocument, c.ngram)
+	
+	docID := c.documents.AddDocumentFromStr(normalizedDocument)
+	d := c.documents.Get(docID)
+	d.SetTokenFrequency(&x)
 
 	if len(normalizedDocument) != c.ngram {
 		c.tableAdd(normalizedDocument, docID)
