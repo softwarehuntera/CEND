@@ -11,9 +11,9 @@ func (c *Collection) DocumentSearch(searchDoc string) []SearchResult {
    
 	searchResult := []SearchResult{}
 	for docID := range c.RelevantDocumentIDs(searchDoc) {
-		matchDoc := (*c.documents)[docID]
-		matchVector := c.vectorTFIDF(matchDoc.doc)
-		searchResult = append(searchResult, SearchResult{docID, matchDoc.doc, dotProduct(searchVector, matchVector)})
+		matchDoc := c.documents.Get(docID).String()
+		matchVector := c.vectorTFIDF(matchDoc)
+		searchResult = append(searchResult, SearchResult{docID, matchDoc, dotProduct(searchVector, matchVector)})
 	}
 	sortSearchResult(searchResult)
 	return searchResult
@@ -45,7 +45,7 @@ func sortSearchResult(searchResult []SearchResult) {
 }
 
 func (c *Collection) IDF(token string) float64 {
-	docCount := len(*c.documents)
+	docCount := c.documents.Length()
 	if docCount == 0 {
 		return 0
 	}
@@ -63,7 +63,7 @@ func (c *Collection) vectorTFIDF(document string) map[string]float64 {
 		tokenFrequency = nGramFrequency(document, c.ngram)
 	} else {
 		docID := *docIDptr
-		tokenFrequency = (*c.documents)[docID].tokenFrequency
+		tokenFrequency = *c.documents.Get(docID).TokenFrequency()
 	}
 
 	vector := make(map[string]float64)

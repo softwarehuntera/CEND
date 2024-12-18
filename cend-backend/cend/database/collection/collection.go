@@ -204,7 +204,7 @@ func (c *Collection) DocumentAdd(document string) error {
 	}
 	normalizedDocument := stringNormalize(document)
 	x := nGramFrequency(normalizedDocument, c.ngram)
-	
+
 	docID := c.documents.AddDocumentFromStr(normalizedDocument)
 	d := c.documents.Get(docID)
 	d.SetTokenFrequency(&x)
@@ -231,7 +231,7 @@ func (c *Collection) DocumentRemove(document string) error {
 
 	docID := *docIDptr
 
-	delete(*c.documents, docID)
+	c.documents.RemoveDocument(docID)
 	
 	if len(document) != c.ngram {
 		c.tableRemove(document, docID)
@@ -246,11 +246,7 @@ func (c *Collection) DocumentRemove(document string) error {
 
 // DocumentList retrieves a list of documents from the collection.
 func (c *Collection) DocumentList() []string {
-	documents := []string{}
-	for _, value := range *c.documents {
-		documents = append(documents, value.doc)
-	}
-	return documents
+	return c.documents.DocumentList()
 }
 
 // RelevantDocumentIDs returns a set of document IDs that contain at least one n-gram from the provided document.

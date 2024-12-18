@@ -3,6 +3,7 @@ package documents
 type Document struct {
 	doc                string
 	id                 int
+	fields 			   *map[string]string // Optional
 	tokenFrequency     *map[string]int  // Optional
 	isPreferred        *bool            // Optional
 	preferredDocuments *[]int           // Optional
@@ -18,6 +19,18 @@ func NewDocumentCollection() *DocumentCollection {
 	}
 }
 
+func (dc *DocumentCollection) DocumentList() []string {
+	documents := []string{}
+	for _, value := range dc.documents {
+		documents = append(documents, value.doc)
+	}
+	return documents
+}
+
+func (dc *DocumentCollection) Documents() map[int]*Document {
+	return dc.documents
+}
+
 func (dc *DocumentCollection) AddDocument(doc Document) int {
 	docID := len(dc.documents) + 1
 	dc.documents[docID] = &doc
@@ -26,12 +39,20 @@ func (dc *DocumentCollection) AddDocument(doc Document) int {
 
 func (dc *DocumentCollection) AddDocumentFromStr(doc string) int {
 	docID := len(dc.documents) + 1
-	dc.documents[docID] = NewDocument(doc, docID, nil, nil, nil)
+	dc.documents[docID] = NewDocument(doc, docID, nil, nil, nil, nil)
 	return docID
 }
 
+func (dc *DocumentCollection) RemoveDocument(id int) {
+	delete(dc.documents, id)
+}
+
 func (dc *DocumentCollection) Get(id int) *Document {
-	return dc.documents[id]
+	doc, exists := dc.documents[id]
+	if !exists {
+		return nil
+	}
+	return doc
 }
 
 func (dc *DocumentCollection) Length() int {
@@ -44,6 +65,7 @@ func NewDocument(
 	id int,
 	tokenFrequency *map[string]int,
 	isPreferred *bool,
+	fields *map[string]string,
 	preferredDocuments *[]int,
 ) *Document {
 	return &Document{
