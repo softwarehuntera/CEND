@@ -33,7 +33,7 @@ type Collection struct {
 
 
 
-type SearchResult struct {
+type SearchResultScore struct {
 	ID int `json:"id"`
 	Document string  `json:"document"`
 	Score    float64 `json:"score"`
@@ -49,6 +49,10 @@ func New(name, path string) *Collection {
 		lookupTable: &map[string]*DocumentIDs{},
 		documents:   documents.NewDocumentCollection(),
 	}
+}
+
+func (c *Collection) GetDocumentCollection() *documents.DocumentCollection {
+	return c.documents
 }
 
 func stringNormalize(s string) string {
@@ -220,26 +224,24 @@ func (c *Collection) DocumentAdd(document string) error {
 	return nil
 }
 
+
+
 // DocumentRemove removes a document from the collection. If the
 // document exists, it is removed from documents and its associated
 // tokens are removed from the lookupTable.
-func (c *Collection) DocumentRemove(document string) error {
-	docIDptr := c.DocumentID(document)
-	if docIDptr == nil {
-		return fmt.Errorf("cannot remove document that does not exist. document=%s", document)
-	}
+func (c *Collection) DocumentRemove(docId int) error {
 
-	docID := *docIDptr
-
-	c.documents.RemoveDocument(docID)
+	doc := c.documents.Get(docId)
+	docStr := doc.String()
+	c.documents.RemoveDocument(docId)
 	
-	if len(document) != c.ngram {
-		c.tableRemove(document, docID)
+	if len(docStr) != c.ngram {
+		c.tableRemove(docStr, docId)
 	}
-	ngrams := nGramSet(document, c.ngram)
+	ngrams := nGramSet(docStr, c.ngram)
 
 	for ngram := range ngrams {
-		c.tableRemove(ngram, docID)
+		c.tableRemove(ngram, docId)
 	}
 	return nil
 }

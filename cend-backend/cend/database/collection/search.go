@@ -6,14 +6,14 @@ import (
 )
 
 // DocumentSearch finds similar documents
-func (c *Collection) DocumentSearch(searchDoc string) []SearchResult {
+func (c *Collection) DocumentSearch(searchDoc string) []SearchResultScore {
 	searchVector := c.vectorTFIDF(searchDoc)
    
-	searchResult := []SearchResult{}
+	searchResult := []SearchResultScore{}
 	for docID := range c.RelevantDocumentIDs(searchDoc) {
 		matchDoc := c.documents.Get(docID).String()
 		matchVector := c.vectorTFIDF(matchDoc)
-		searchResult = append(searchResult, SearchResult{docID, matchDoc, dotProduct(searchVector, matchVector)})
+		searchResult = append(searchResult, SearchResultScore{docID, matchDoc, dotProduct(searchVector, matchVector)})
 	}
 	sortSearchResult(searchResult)
 	return searchResult
@@ -31,8 +31,8 @@ func dotProduct(v1, v2 map[string]float64) float64 {
 
 
 
-func sortSearchResult(searchResult []SearchResult) {
-	compareByScoreDesc := func(a, b SearchResult) int {
+func sortSearchResult(searchResult []SearchResultScore) {
+	compareByScoreDesc := func(a, b SearchResultScore) int {
 		if a.Score > b.Score {
 			return -1
 		}

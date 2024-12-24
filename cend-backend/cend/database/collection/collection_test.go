@@ -42,7 +42,7 @@ func TestDocumentRemove(t *testing.T) {
 	// Add and then remove a document
 	document := "example"
 	collection.DocumentAdd(document)
-	collection.DocumentRemove(document)
+	collection.DocumentRemove(0)
 
 	// Check if the document still exists
 	if collection.DocumentExists(document) {
@@ -77,7 +77,7 @@ func TestOverlappingDocuments(t *testing.T) {
 		t.Errorf("Overlapping collections do not match.\nExpected: %+v\nGot: %+v", expectedCollection, actualCollection)
 	}
 
-	actualCollection.DocumentRemove(documents[1])
+	actualCollection.DocumentRemove(1)
 	expectedCollection = overlapCollection2()
 	if !Equal(actualCollection, expectedCollection) {
 		t.Errorf("Overlapping collections do not match after removal.\nExpected: %+v\nGot: %+v", expectedCollection, actualCollection)
@@ -298,7 +298,7 @@ func TestAddRemoveSingleDocument(t *testing.T) {
 	}
 
 	// Remove the document
-	actualCollection.DocumentRemove(doc)
+	actualCollection.DocumentRemove(0)
 
 	// Verify document no longer exists in the collection
 	if actualCollection.DocumentExists(doc) {
