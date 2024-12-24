@@ -29,7 +29,7 @@ func TestDocumentSearch(t *testing.T) {
 	// Log the search results with document content
 	var logMsg string
 	for i, result := range results {
-		doc := (*collection.documents)[result.ID].doc
+		doc := collection.documents.Get(result.ID).String()
 		logMsg += fmt.Sprintf("\nRank %d (Score: %.4f): %s", i+1, result.Score, doc)
 	}
 	LogInfo("Search Results for: " + searchDoc + logMsg)
@@ -59,7 +59,7 @@ func TestTechnicalDocumentSearch(t *testing.T) {
 	// Log the search results with document content
 	var logMsg string
 	for i, result := range results {
-		doc := (*collection.documents)[result.ID].doc
+		doc := collection.documents.Get(result.ID).String()
 		logMsg += fmt.Sprintf("\nRank %d (Score: %.4f): %s", i+1, result.Score, doc)
 	}
 	LogInfo("Search Results for: " + searchDoc + logMsg)

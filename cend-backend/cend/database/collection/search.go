@@ -6,14 +6,14 @@ import (
 )
 
 // DocumentSearch finds similar documents
-func (c *Collection) DocumentSearch(searchDoc string) []SearchResult {
+func (c *Collection) DocumentSearch(searchDoc string) []SearchResultScore {
 	searchVector := c.vectorTFIDF(searchDoc)
    
-	searchResult := []SearchResult{}
+	searchResult := []SearchResultScore{}
 	for docID := range c.RelevantDocumentIDs(searchDoc) {
-		matchDoc := (*c.documents)[docID]
-		matchVector := c.vectorTFIDF(matchDoc.doc)
-		searchResult = append(searchResult, SearchResult{docID, matchDoc.doc, dotProduct(searchVector, matchVector)})
+		matchDoc := c.documents.Get(docID).String()
+		matchVector := c.vectorTFIDF(matchDoc)
+		searchResult = append(searchResult, SearchResultScore{docID, matchDoc, dotProduct(searchVector, matchVector)})
 	}
 	sortSearchResult(searchResult)
 	return searchResult
@@ -31,8 +31,8 @@ func dotProduct(v1, v2 map[string]float64) float64 {
 
 
 
-func sortSearchResult(searchResult []SearchResult) {
-	compareByScoreDesc := func(a, b SearchResult) int {
+func sortSearchResult(searchResult []SearchResultScore) {
+	compareByScoreDesc := func(a, b SearchResultScore) int {
 		if a.Score > b.Score {
 			return -1
 		}
@@ -45,7 +45,7 @@ func sortSearchResult(searchResult []SearchResult) {
 }
 
 func (c *Collection) IDF(token string) float64 {
-	docCount := len(*c.documents)
+	docCount := c.documents.Length()
 	if docCount == 0 {
 		return 0
 	}
@@ -63,7 +63,7 @@ func (c *Collection) vectorTFIDF(document string) map[string]float64 {
 		tokenFrequency = nGramFrequency(document, c.ngram)
 	} else {
 		docID := *docIDptr
-		tokenFrequency = (*c.documents)[docID].tokenFrequency
+		tokenFrequency = *c.documents.Get(docID).TokenFrequency()
 	}
 
 	vector := make(map[string]float64)

@@ -1,6 +1,7 @@
 package collection
 
 import (
+	"cend/database/collection/documents"
 	"testing"
 )
 
@@ -41,7 +42,7 @@ func TestDocumentRemove(t *testing.T) {
 	// Add and then remove a document
 	document := "example"
 	collection.DocumentAdd(document)
-	collection.DocumentRemove(document)
+	collection.DocumentRemove(0)
 
 	// Check if the document still exists
 	if collection.DocumentExists(document) {
@@ -76,7 +77,7 @@ func TestOverlappingDocuments(t *testing.T) {
 		t.Errorf("Overlapping collections do not match.\nExpected: %+v\nGot: %+v", expectedCollection, actualCollection)
 	}
 
-	actualCollection.DocumentRemove(documents[1])
+	actualCollection.DocumentRemove(1)
 	expectedCollection = overlapCollection2()
 	if !Equal(actualCollection, expectedCollection) {
 		t.Errorf("Overlapping collections do not match after removal.\nExpected: %+v\nGot: %+v", expectedCollection, actualCollection)
@@ -90,6 +91,9 @@ func TestOverlappingDocuments(t *testing.T) {
 }
 
 func overlapCollection1() (*Collection) {
+	dc := documents.NewDocumentCollection()
+	dc.AddDocument(*documents.NewDocument("apple", 1, nil, nil, nil, nil))
+	dc.AddDocument(*documents.NewDocument("apples", 2, nil, nil, nil, nil))
 	return &Collection{
 		name: "Test Collection",
 		ngram: 3,
@@ -134,14 +138,13 @@ func overlapCollection1() (*Collection) {
 				},
 			},
 		},
-		documents: &map[int]Document{
-			1: {doc: "apple"},
-			2: {doc: "apples"},
-		},
+		documents: dc,
 	}
 }
 
 func overlapCollection2() (*Collection) {
+	dc := documents.NewDocumentCollection()
+	dc.AddDocument(*documents.NewDocument("apple", 1, nil, nil, nil, nil))
 	return &Collection{
 		name: "Test Collection",
 		ngram: 3,
@@ -171,9 +174,7 @@ func overlapCollection2() (*Collection) {
 				},
 			},
 		},
-		documents: &map[int]Document{
-			1: {doc: "apple"},
-		},
+		documents: dc,
 	}
 }
 
@@ -194,6 +195,11 @@ func TestOverlappingDocumentsWithDuplicateTrigrams(t *testing.T) {
 
 // overlapCollection3 defines the expected state after adding "apple", "apples", and "cargo cart"
 func overlapCollection3() *Collection {
+	dc := documents.NewDocumentCollection()
+	dc.AddDocument(*documents.NewDocument("apple", 1, nil, nil, nil, nil))
+	dc.AddDocument(*documents.NewDocument("apples", 2, nil, nil, nil, nil))
+	dc.AddDocument(*documents.NewDocument("cargo cart", 3, nil, nil, nil, nil))
+
 	return &Collection{
 		name: "Test Collection",
 		ngram: 3,
@@ -274,11 +280,7 @@ func overlapCollection3() *Collection {
 				},
 			},
 		},
-		documents: &map[int]Document{
-			1: {doc: "apple"},
-			2: {doc: "apples"},
-			3: {doc: "cargo cart"},
-		},
+		documents: dc,
 	}
 }
 
@@ -296,7 +298,7 @@ func TestAddRemoveSingleDocument(t *testing.T) {
 	}
 
 	// Remove the document
-	actualCollection.DocumentRemove(doc)
+	actualCollection.DocumentRemove(0)
 
 	// Verify document no longer exists in the collection
 	if actualCollection.DocumentExists(doc) {
@@ -307,8 +309,7 @@ func TestAddRemoveSingleDocument(t *testing.T) {
 		ngram: 3,
 		lookupTable: &map[string]*DocumentIDs{
 		},
-		documents: &map[int]Document{
-		},
+		documents: documents.NewDocumentCollection(),
 	}
 	if !Equal(actualCollection, expectedCollection) {
 		t.Errorf("Collections do not match.\nExpected: %+v\nGot: %+v", expectedCollection, actualCollection)
@@ -324,6 +325,8 @@ func TestAddDuplicateDocument(t *testing.T) {
 	actualCollection.DocumentAdd(doc)
 	actualCollection.DocumentAdd(doc)
 
+	dc := documents.NewDocumentCollection()
+	dc.AddDocument(*documents.NewDocument("banana", 1, nil, nil, nil, nil))
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
@@ -347,14 +350,12 @@ func TestAddDuplicateDocument(t *testing.T) {
 				},
 			},
 		},
-		documents: &map[int]Document{
-			1: {doc: "banana"},
-		},
+		documents: dc,
 	}
 
 	// Ensure it is added only once
-	if len(*actualCollection.documents) != 1 {
-		t.Errorf("Expected only 1 document, got %d", len(*actualCollection.documents))
+	if acl := actualCollection.documents.Length(); acl != 1 {
+		t.Errorf("Expected only 1 document, got %d", acl)
 	}
 	if !Equal(actualCollection, expectedCollection) {
 		t.Errorf("Collections do not match.\nExpected: %+v\nGot: %+v", expectedCollection, actualCollection)
@@ -369,6 +370,8 @@ func TestAddLengthNDocument(t *testing.T) {
 	doc := "ban"
 	actualCollection.DocumentAdd(doc)
 
+	dc := documents.NewDocumentCollection()
+	dc.AddDocument(*documents.NewDocument("ban", 1, nil, nil, nil, nil))
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
@@ -380,14 +383,12 @@ func TestAddLengthNDocument(t *testing.T) {
 				},
 			},
 		},
-		documents: &map[int]Document{
-			1: {doc: "ban"},
-		},
+		documents: dc,
 	}
 
 	// Ensure it is added only once
-	if len(*actualCollection.documents) != 1 {
-		t.Errorf("Expected only 1 document, got %d", len(*actualCollection.documents))
+	if acl := actualCollection.documents.Length(); acl != 1 {
+		t.Errorf("Expected only 1 document, got %d", acl)
 	}
 	if !Equal(actualCollection, expectedCollection) {
 		t.Errorf("Collections do not match.\nExpected: %+v\nGot: %+v", expectedCollection, actualCollection)
@@ -405,6 +406,9 @@ func TestAddShortDocument(t *testing.T) {
 	if !actualCollection.DocumentExists(doc) {
 		t.Errorf("Document %s should exist in the collection", doc)
 	}
+
+	dc := documents.NewDocumentCollection()
+	dc.AddDocument(*documents.NewDocument("hi", 1, nil, nil, nil, nil))
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
@@ -416,9 +420,7 @@ func TestAddShortDocument(t *testing.T) {
 				},
 			},
 		},
-		documents: &map[int]Document{
-			1:  {doc: "hi"},
-		},
+		documents: dc,
 	}
 	if !Equal(actualCollection, expectedCollection) {
 		t.Errorf("Collections do not match.\nExpected: %+v\nGot: %+v", expectedCollection, actualCollection)
@@ -439,6 +441,9 @@ func TestAddNormalizedDocument(t *testing.T) {
 	if !actualCollection.DocumentExists(normalizedDoc) {
 		t.Errorf("Document %s (normalized to %s) should exist in the collection", doc, normalizedDoc)
 	}
+
+	dc := documents.NewDocumentCollection()
+	dc.AddDocument(*documents.NewDocument(normalizedDoc, 1, nil, nil, nil, nil))
 
 	// Expected collection after adding normalized document
 	expectedCollection := &Collection{
@@ -470,9 +475,7 @@ func TestAddNormalizedDocument(t *testing.T) {
 				},
 			},
 		},
-		documents: &map[int]Document{
-			1: {doc: normalizedDoc},
-		},
+		documents: dc,
 	}
 
 	// Check that actual collection matches expected collection

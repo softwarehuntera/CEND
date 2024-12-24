@@ -6,6 +6,8 @@ import (
 	"unicode"
 
 	"golang.org/x/text/unicode/norm"
+
+	"cend/database/collection/documents"
 )
 
 // TODOs:
@@ -26,15 +28,12 @@ type Collection struct {
 	name         string
 	ngram		int
 	lookupTable  *map[string]*DocumentIDs
-	documents    *map[int]Document
+	documents    *documents.DocumentCollection
 }
 
-type Document struct {
-	doc string
-	tokenFrequency map[string]int
-}
 
-type SearchResult struct {
+
+type SearchResultScore struct {
 	ID int `json:"id"`
 	Document string  `json:"document"`
 	Score    float64 `json:"score"`
@@ -42,13 +41,18 @@ type SearchResult struct {
 
 // New creates and returns a new Collection with the specified name.
 func New(name, path string) *Collection {
+
 	return &Collection{
 		Path:		path,
 		name:        name,
 		ngram:		3,
 		lookupTable: &map[string]*DocumentIDs{},
-		documents:   &map[int]Document{},
+		documents:   documents.NewDocumentCollection(),
 	}
+}
+
+func (c *Collection) GetDocumentCollection() *documents.DocumentCollection {
+	return c.documents
 }
 
 func stringNormalize(s string) string {
@@ -183,8 +187,8 @@ func (c *Collection) DocumentID(document string) *int {
 	}
 	ids := (*c.lookupTable)[document]
 	for docID := range ids.docIDs {
-		actualDocument := (*c.documents)[docID]
-		if actualDocument.doc == document {
+		actualDocument := (*c.documents).Get(docID)
+		if actualDocument.String() == document {
 			return &docID
 		}
 	}
@@ -198,13 +202,16 @@ func (c *Collection) DocumentExists(document string) bool {
 
 // DocumentAdd adds a document; its n-grams are tokenized and stored in the lookupTable.
 func (c *Collection) DocumentAdd(document string) error {
-	docID := len(*c.documents) + 1
 
 	if c.DocumentExists(document) {
 		return fmt.Errorf("cannot add document that already exists: document=%s", document)
 	}
 	normalizedDocument := stringNormalize(document)
-	(*c.documents)[docID] = Document{doc: normalizedDocument, tokenFrequency: nGramFrequency(normalizedDocument, c.ngram)}
+	x := nGramFrequency(normalizedDocument, c.ngram)
+
+	docID := c.documents.AddDocumentFromStr(normalizedDocument)
+	d := c.documents.Get(docID)
+	d.SetTokenFrequency(&x)
 
 	if len(normalizedDocument) != c.ngram {
 		c.tableAdd(normalizedDocument, docID)
@@ -217,37 +224,31 @@ func (c *Collection) DocumentAdd(document string) error {
 	return nil
 }
 
+
+
 // DocumentRemove removes a document from the collection. If the
 // document exists, it is removed from documents and its associated
 // tokens are removed from the lookupTable.
-func (c *Collection) DocumentRemove(document string) error {
-	docIDptr := c.DocumentID(document)
-	if docIDptr == nil {
-		return fmt.Errorf("cannot remove document that does not exist. document=%s", document)
-	}
+func (c *Collection) DocumentRemove(docId int) error {
 
-	docID := *docIDptr
-
-	delete(*c.documents, docID)
+	doc := c.documents.Get(docId)
+	docStr := doc.String()
+	c.documents.RemoveDocument(docId)
 	
-	if len(document) != c.ngram {
-		c.tableRemove(document, docID)
+	if len(docStr) != c.ngram {
+		c.tableRemove(docStr, docId)
 	}
-	ngrams := nGramSet(document, c.ngram)
+	ngrams := nGramSet(docStr, c.ngram)
 
 	for ngram := range ngrams {
-		c.tableRemove(ngram, docID)
+		c.tableRemove(ngram, docId)
 	}
 	return nil
 }
 
 // DocumentList retrieves a list of documents from the collection.
 func (c *Collection) DocumentList() []string {
-	documents := []string{}
-	for _, value := range *c.documents {
-		documents = append(documents, value.doc)
-	}
-	return documents
+	return c.documents.DocumentList()
 }
 
 // RelevantDocumentIDs returns a set of document IDs that contain at least one n-gram from the provided document.

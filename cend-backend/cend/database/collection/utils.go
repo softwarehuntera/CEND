@@ -46,13 +46,19 @@ func Equal(actual *Collection, expected *Collection) bool {
 	}
 
 	// Compare documents
-	if len(*expected.documents) != len(*actual.documents) {
+	if expected.documents.Length() != actual.documents.Length() {
 		LogInfo(fmt.Sprintf("Documents mismatch. actual=%v, expected=%v", *expected.documents,*actual.documents ))
 		return false
 	}
-	for docID, expectedDoc := range *expected.documents {
-		actualDoc, exists := (*actual.documents)[docID]
-		if !exists || actualDoc.doc != expectedDoc.doc {
+	
+	for docID, expectedDoc := range expected.documents.Documents() {
+		actualDoc := actual.documents.Get(docID)
+		if actualDoc == nil {
+			LogInfo(fmt.Sprintf("Expected docID %v not found in actual documents", docID))
+			return false
+		}
+		actualDocStr := actualDoc.String()
+		if actualDocStr != expectedDoc.String() {
 			LogInfo(fmt.Sprintf("Mismatch in documents: expected docID %v to have content %v, got %v", docID, expectedDoc, actualDoc))
 			return false
 		}
