@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { FaCircleUser } from "react-icons/fa6";
 
@@ -56,6 +56,35 @@ export default function Home() {
   const handleSearchResults = (results: any[]) => {
     setSearchResults(results);
   };
+  
+    // Function to fetch the initial search results on mount
+    const onInitialization = async () => {
+      try {
+          const response = await fetch("http://localhost:80/query", {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ min: 0, max: 100 }),
+          });
+
+          if (!response.ok) {
+              throw new Error("Network response was not ok");
+          }
+
+          const data = await response.json();
+          // Update the search results with the initial data
+          setSearchResults(data);
+      } catch (error) {
+          console.error("Error fetching initial search results:", error);
+          alert("An error occurred while fetching the initial results.");
+      }
+  };
+
+  // Call onInitialization when the component mounts
+  useEffect(() => {
+      onInitialization();
+  }, []);
 
   return (
     <div className="grid min-h-screen p-4 gap-8 font-[family-name:var(--font-geist-sans)]">

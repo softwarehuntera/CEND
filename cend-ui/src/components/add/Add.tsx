@@ -19,7 +19,7 @@ export default function Add() {
     const termData = {
       name,
       isPreferred,
-      ...Object.fromEntries(dynamicFields.map(field => [field.key, field.value]))
+      fields: Object.fromEntries(dynamicFields.map(field => [field.key, field.value]))
     };
 
     try {
