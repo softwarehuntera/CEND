@@ -15,22 +15,22 @@ export default function Add() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
     const termData = {
-      name,
+      document: name,
       isPreferred,
+      preferredDocuments: [],
       fields: Object.fromEntries(dynamicFields.map(field => [field.key, field.value]))
     };
 
     try {
-      const response = await fetch('http://localhost:8000/add', {
+      const response = await fetch('http://localhost:80/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(termData),
       });
-
+      console.log(response);
       if (!response.ok) {
         throw new Error('Failed to add term');
       }

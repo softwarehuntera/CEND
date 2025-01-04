@@ -92,8 +92,8 @@ func TestOverlappingDocuments(t *testing.T) {
 
 func overlapCollection1() (*Collection) {
 	dc := documents.NewDocumentCollection()
-	dc.AddDocument(*documents.NewDocument("apple", 1, nil, nil, nil, nil))
-	dc.AddDocument(*documents.NewDocument("apples", 2, nil, nil, nil, nil))
+	dc.AddDocument("apple", nil, false, nil, nil)
+	dc.AddDocument("apples", nil, false, nil, nil)
 	return &Collection{
 		name: "Test Collection",
 		ngram: 3,
@@ -144,7 +144,7 @@ func overlapCollection1() (*Collection) {
 
 func overlapCollection2() (*Collection) {
 	dc := documents.NewDocumentCollection()
-	dc.AddDocument(*documents.NewDocument("apple", 1, nil, nil, nil, nil))
+	dc.AddDocument("apple", nil, false, nil, nil)
 	return &Collection{
 		name: "Test Collection",
 		ngram: 3,
@@ -196,9 +196,9 @@ func TestOverlappingDocumentsWithDuplicateTrigrams(t *testing.T) {
 // overlapCollection3 defines the expected state after adding "apple", "apples", and "cargo cart"
 func overlapCollection3() *Collection {
 	dc := documents.NewDocumentCollection()
-	dc.AddDocument(*documents.NewDocument("apple", 1, nil, nil, nil, nil))
-	dc.AddDocument(*documents.NewDocument("apples", 2, nil, nil, nil, nil))
-	dc.AddDocument(*documents.NewDocument("cargo cart", 3, nil, nil, nil, nil))
+	dc.AddDocument("apple", nil, false, nil, nil)
+	dc.AddDocument("apples", nil, false, nil, nil)
+	dc.AddDocument("cargo cart", nil, false, nil, nil)
 
 	return &Collection{
 		name: "Test Collection",
@@ -326,7 +326,7 @@ func TestAddDuplicateDocument(t *testing.T) {
 	actualCollection.DocumentAdd(doc)
 
 	dc := documents.NewDocumentCollection()
-	dc.AddDocument(*documents.NewDocument("banana", 1, nil, nil, nil, nil))
+	dc.AddDocument("banana", nil, false, nil, nil)
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
@@ -371,7 +371,7 @@ func TestAddLengthNDocument(t *testing.T) {
 	actualCollection.DocumentAdd(doc)
 
 	dc := documents.NewDocumentCollection()
-	dc.AddDocument(*documents.NewDocument("ban", 1, nil, nil, nil, nil))
+	dc.AddDocument("ban", nil, false, nil, nil)
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
@@ -408,7 +408,7 @@ func TestAddShortDocument(t *testing.T) {
 	}
 
 	dc := documents.NewDocumentCollection()
-	dc.AddDocument(*documents.NewDocument("hi", 1, nil, nil, nil, nil))
+	dc.AddDocument("hi", nil, false, nil, nil)
 	expectedCollection := &Collection{
 		name: "Test Collection",
 		ngram: 3,
@@ -443,7 +443,7 @@ func TestAddNormalizedDocument(t *testing.T) {
 	}
 
 	dc := documents.NewDocumentCollection()
-	dc.AddDocument(*documents.NewDocument(normalizedDoc, 1, nil, nil, nil, nil))
+	dc.AddDocument(normalizedDoc, nil, false, nil, nil)
 
 	// Expected collection after adding normalized document
 	expectedCollection := &Collection{

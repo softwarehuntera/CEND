@@ -117,6 +117,8 @@ func queryHandler(db *database.DB) http.HandlerFunc {
             )
             return
         }
+		fmt.Printf("Incoming search request: %v", req)
+		fmt.Printf("Query: %v", req)
 
 		if req.Min < 0 || req.Max < req.Min {
 			writeError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Invalid range: min must be >= 0 and max must be >= min", "Error: Invalid Range")
@@ -135,9 +137,20 @@ func queryHandler(db *database.DB) http.HandlerFunc {
 			writeError(w, http.StatusInternalServerError, "INERNAL_ERROR", "Error getting documents", err.Error())
 			return
 		}
+		fmt.Printf("Document List: %v", docList)
+
+		// convert documents to query results because document fields are private and cannot be JSON encoded
+		queryResults := make([]QueryResult, 0, len(docList))
+		for _, doc := range docList {
+			if doc == nil {
+				writeError(w, http.StatusInternalServerError, "INERNAL_ERROR", "Error getting documents", "Document not found")
+				return
+			}
+			queryResults = append(queryResults, documentToQueryResult(doc))
+		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(docList)
+		json.NewEncoder(w).Encode(queryResults)
 	}
 }
 
@@ -165,9 +178,14 @@ func addHandler(db *database.DB) http.HandlerFunc {
 			http.Error(w, "Document was empty", http.StatusBadRequest)
 			return
 		}
+		docs.DocumentAdd(req.Document)
+		docID := docs.DocumentID(req.Document)
+		if docID == nil {
+			http.Error(w, "Error adding document", http.StatusInternalServerError)
+			return
+		}
 		docCollec := docs.GetDocumentCollection()
-		docID := docCollec.AddDocumentFromStr(req.Document)
-		doc := docCollec.Get(docID)
+		doc := docCollec.Get(*docID)
 		if err := doc.AddFields(req.Fields); err != nil {
 			http.Error(w, "Fields invalid", http.StatusBadRequest)
 			return

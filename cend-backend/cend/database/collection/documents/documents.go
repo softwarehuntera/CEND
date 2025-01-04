@@ -41,25 +41,34 @@ func (dc *DocumentCollection) GetDocuments(min, max int) ([]*Document, error) {
 	dcLen := dc.Length()
 
 	// ensure valid range
-	if min < 0 {
+	if min < 1 {
 		return nil, fmt.Errorf("invalid min: %v", min)
 	}
 	if max >= dcLen {
 		return nil, fmt.Errorf("invalid max: %v", max)
 	}
 
-	for _, id := range make([]int, max-min+1) {
+	for id := min; id <= max; id++ {
 		docs = append(docs, dc.Get(id))
 	}
 	return docs, nil
 }
 
-func (dc *DocumentCollection) AddDocument(doc Document) int {
+func (dc *DocumentCollection) AddDocument(
+		doc string,
+		tokenFrequency map[string]int,
+		isPreferred bool,
+		fields map[string]string,
+		preferredDocuments []int,
+	) int {
 	docID := len(dc.documents) + 1
-	dc.documents[docID] = &doc
-	if doc.ID() != docID {
-		log.Fatalf("Cannot add document with invalid ID");
+	document := NewDocument(doc, docID, &tokenFrequency, &isPreferred, &fields, &preferredDocuments)
+	if document == nil {
+		log.Printf("Error creating document, document is nil: %v", doc)
+		return -1
 	}
+	log.Printf("Adding document to collection: %v", doc)
+	dc.documents[docID] = document
 	return docID
 }
 
