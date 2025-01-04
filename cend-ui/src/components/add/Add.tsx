@@ -1,4 +1,5 @@
 // src/components/add/Add.tsx
+import { NewTermEntry } from '@/types/backendTypes';
 import { useState, FormEvent } from 'react';
 
 interface DynamicField {
@@ -12,13 +13,15 @@ export default function Add() {
   const [dynamicFields, setDynamicFields] = useState<DynamicField[]>([]);
   const [newFieldKey, setNewFieldKey] = useState('');
   const [newFieldValue, setNewFieldValue] = useState('');
+  const [preferredDocuments, setPreferredDocuments] = useState<number[]>([]);
+  const [newDocumentId, setNewDocumentId] = useState('');
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const termData = {
+    const termData: NewTermEntry = {
       document: name,
       isPreferred,
-      preferredDocuments: [],
+      preferredDocuments: preferredDocuments,
       fields: Object.fromEntries(dynamicFields.map(field => [field.key, field.value]))
     };
 
@@ -39,6 +42,7 @@ export default function Add() {
       setName('');
       setIsPreferred(false);
       setDynamicFields([]);
+      setPreferredDocuments([]);
       alert('Term added successfully!');
     } catch (error) {
       console.error('Error adding term:', error);
@@ -59,6 +63,18 @@ export default function Add() {
 
   const removeDynamicField = (index: number) => {
     setDynamicFields(dynamicFields.filter((_, i) => i !== index));
+  };
+
+  const addPreferredDocument = () => {
+    const documentId = parseInt(newDocumentId, 10);
+    if (!isNaN(documentId) && !preferredDocuments.includes(documentId)) {
+      setPreferredDocuments([...preferredDocuments, documentId]);
+      setNewDocumentId('');
+    }
+  };
+
+  const removePreferredDocument = (index: number) => {
+    setPreferredDocuments(preferredDocuments.filter((_, i) => i !== index));
   };
 
   return (
@@ -131,6 +147,47 @@ export default function Add() {
           >
             Add Field
           </button>
+        </div>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          className="w-full px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          Add Term
+        </button>
+
+        {/* Preferred Documents */}
+        <div className="space-y-2">
+          <h3 className="font-semibold">Preferred Documents</h3>
+          {preferredDocuments.map((docId, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <span>{docId}</span>
+              <button
+                type="button"
+                onClick={() => removePreferredDocument(index)}
+                className="text-red-500 hover:text-red-700"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <div className="flex space-x-2">
+            <input
+              type="text"
+              value={newDocumentId}
+              onChange={(e) => setNewDocumentId(e.target.value)}
+              placeholder="Add Document ID"
+              className="p-2 border rounded"
+            />
+            <button
+              type="button"
+              onClick={addPreferredDocument}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Add
+            </button>
+          </div>
         </div>
 
         {/* Submit Button */}

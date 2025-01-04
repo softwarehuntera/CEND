@@ -6,57 +6,52 @@ import { FaCircleUser } from "react-icons/fa6";
 
 import { SearchBar } from '@/components/search';
 import { Add } from '@/components/add';
-// import { Filter } from '@/components/filter';
+import { TermSelection } from '@/components/select';
+import { TermEntry } from '@/types/backendTypes';
 import { SearchResults } from '@/components/results';
+import { GetTerms } from '@/types/backendTypes';
 
 export default function Home() {
-  // type SearchResult = {
-  //   name: string;
-  //   location: string;
-  //   age: string;
-  //   gender: string;
-  //   [key: string]: string;
-  // };
-
-  // const mockResults: SearchResult[] = [
-  //   { name: 'Alice', location: 'USA', age: '30', gender: 'Female' },
-  //   { name: 'Bob', location: 'Canada', age: '25', gender: 'Male' },
-  //   { name: 'Charlie', location: 'USA', age: '35', gender: 'Male' },
-  //   { name: 'Diana', location: 'USA', age: '28', gender: 'Female' },
-  //   // Add more mock results as needed
-  // ];
-
-  // const [searchResults, setSearchResults] = useState(mockResults);
-  // const [filteredResults, setFilteredResults] = useState(mockResults);
-  // const [filters, setFilters] = useState<{ [key: string]: Set<string> }>({});
-
-  // const handleFilterChange = (newFilters: { [key: string]: Set<string> }) => {
-  //   setFilters(newFilters);
-  //   applyFilters(newFilters);
-  // };
-
-  // const applyFilters = (activeFilters: { [key: string]: Set<string> }) => {
-  //   if (Object.keys(activeFilters).length === 0) {
-  //     setFilteredResults(searchResults);
-  //     return;
-  //   }
-
-  //   const results = searchResults.filter((item) =>
-  //     Object.entries(activeFilters).every(([field, values]) => {
-  //       // Include item if the field is not in filters or if the item's value is in the selected values
-  //       return values.has(item[field]);
-  //     })
-  //   );
-
-  //   setFilteredResults(results);
-  // };
 
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedTerm, setSelectedTerm] = useState<TermEntry | null>(null);
+  const [selectedTermCluster, setSelectedTermCluster] = useState<TermEntry[]>([]);
 
   const handleSearchResults = (results: any[]) => {
     setSearchResults(results);
   };
+
+  const handleSelectedTerm = async (term: TermEntry) => {
+    setSelectedTerm(term);
+    const x = await getRelatedTerms(term);
+    x? console.log(`Setting related terms ${x}`): console.log("No related terms found");
+    x? setSelectedTermCluster(x): setSelectedTermCluster([]);
+  };
   
+    const getRelatedTerms = async (term: TermEntry) => {
+      try {
+        const getTerms: GetTerms = {ids: term.preferredDocuments};
+        const response = await fetch("http://localhost:80/get", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          
+          body: JSON.stringify(getTerms),
+        });
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data: TermEntry[] = await response.json();
+        return data;
+      } catch (error) {
+        console.error("Error getting related terms:", error);
+        alert("An error occurred while fetching the initial results.");
+      }
+    };
+
     // Function to fetch the initial search results on mount
     const onInitialization = async () => {
       try {
@@ -93,22 +88,18 @@ export default function Home() {
         <div className="col-span-3 flex flex-col gap-4">
           {/* Search Input */}
           <SearchBar onSearchResults={handleSearchResults}/>
-
-          {/* Results Container */}
-          {/* <div className="grid grid-cols-12 gap-4 p-4 bg-white rounded-lg"> */}
-            {/* <Filter searchResults={searchResults} onFilterChange={handleFilterChange} /> */}
-
-            {/* Results Section */}
-            <SearchResults results={searchResults} />
-          {/* </div> */}
+          {/* Results Section */}
+          <SearchResults results={searchResults} onSelectTerm={handleSelectedTerm} />
         </div>
 
-        {/* Right Column - User Icon and Options (2 cols) */}
+        {/* Right Column */}
         <div className="col-span-2 flex flex-col gap-4">
           {/* User Icon */}
           <div className="flex justify-end">
             <FaCircleUser className="text-5xl text-white" />
           </div>
+
+          {/* Selected Term */}
 
           {/* Datasets Section */}
           {/* <div className="p-4 bg-gray-200 rounded-lg text-black">
@@ -119,6 +110,7 @@ export default function Home() {
           </div> */}
 
           {/* Add Section */}
+          <TermSelection selectedTerm={selectedTerm} selectedTermCluster={selectedTermCluster} />
           <Add />
         </div>
       </main>

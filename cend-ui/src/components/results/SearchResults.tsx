@@ -1,18 +1,13 @@
 // src/components/results/SearchResults.tsx
+import { TermEntry } from '@/types/backendTypes';
 
-type QueryResult = {
-    document: string;
-    id: number;
-    fields: Record<string, string> | null;  // Fields can be a map of string keys to string values
-    isPreferred: boolean;
-    preferredDocuments: number[];
-};
 
 type SearchResultsProps = {
-    results: QueryResult[];
+    onSelectTerm: (term: TermEntry) => void;
+    results: TermEntry[];
 };
 
-export default function SearchResults({ results }: SearchResultsProps) {
+export default function SearchResults({ results, onSelectTerm }: SearchResultsProps) {
     // Exclude these fields from being displayed
     const excludedFields = ['id', 'secret'];
     console.log('Search results:', results);
@@ -22,7 +17,11 @@ export default function SearchResults({ results }: SearchResultsProps) {
             <h2 className="text-xl font-semibold">Search Results</h2>
             {results.length > 0 ? (
                 results.map((result, index) => (
-                    <div key={index} className="p-2 bg-white my-2 rounded shadow">
+                    <div
+                        key={index}
+                        className="p-2 bg-white my-2 rounded shadow cursor-pointer hover:bg-gray-100"
+                        onClick={() => onSelectTerm(result)}
+                    >
                         {/* Display the document and id */}
                         <p>
                             <span className="font-semibold capitalize">Document: </span>
