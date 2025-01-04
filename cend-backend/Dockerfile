@@ -12,10 +12,11 @@ RUN --mount=type=cache,target=/go/pkg/mod/cache \
     go mod download
 
 COPY ./cend/ .
+COPY ./test-data ../test-data
 
 RUN --mount=type=cache,target=/go/pkg/mod/cache \
     --mount=type=cache,target=/go-build \
-    go build -o bin/cend-backend/cend main.go
+    go build -o bin/cend-backend/cend .
 
 CMD ["/code/bin/cend-backend/cend"]
 

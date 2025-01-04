@@ -1,10 +1,26 @@
 package main
 
 import (
+	"cend/database/collection/documents"
 	"cend/database/collection"
 	"encoding/json"
 	"net/http"
 )
+
+func documentToQueryResult(doc *documents.Document) QueryResult {
+	fields := doc.Fields()
+	if fields == nil {
+		f := make(map[string]string)
+		fields = &f
+	}
+	return QueryResult{
+		Document: doc.String(),
+		Id: doc.ID(),
+		Fields: fields,
+		IsPreferred: doc.Preferred(),
+		PreferredDocuments: doc.PreferredDocuments(),
+	}
+}
 
 func getSearchResult(collec *collection.Collection, searchResults []collection.SearchResultScore) []SearchResult {
 	dc := collec.GetDocumentCollection()

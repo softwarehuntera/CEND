@@ -182,10 +182,11 @@ func (c *Collection) tableRemove(token string, docID int) error {
 // DocumentID retrieves the ID of a document if it exists in the
 // collection.
 func (c *Collection) DocumentID(document string) *int {
-	if _, exists := (*c.lookupTable)[document]; !exists {
+	normalizedDocument := stringNormalize(document)
+	if _, exists := (*c.lookupTable)[normalizedDocument]; !exists {
 		return nil
 	}
-	ids := (*c.lookupTable)[document]
+	ids := (*c.lookupTable)[normalizedDocument]
 	for docID := range ids.docIDs {
 		actualDocument := (*c.documents).Get(docID)
 		if actualDocument.String() == document {
@@ -208,8 +209,9 @@ func (c *Collection) DocumentAdd(document string) error {
 	}
 	normalizedDocument := stringNormalize(document)
 	x := nGramFrequency(normalizedDocument, c.ngram)
-
-	docID := c.documents.AddDocumentFromStr(normalizedDocument)
+	fields := make(map[string]string)
+	preferredDocs := []int{}
+	docID := c.documents.AddDocument(document, x, false, fields, preferredDocs)
 	d := c.documents.Get(docID)
 	d.SetTokenFrequency(&x)
 

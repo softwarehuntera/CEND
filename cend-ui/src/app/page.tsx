@@ -65,7 +65,7 @@ export default function Home() {
               headers: {
                   "Content-Type": "application/json",
               },
-              body: JSON.stringify({ min: 0, max: 100 }),
+              body: JSON.stringify({ min: 1, max: 100 }),
           });
 
           if (!response.ok) {
