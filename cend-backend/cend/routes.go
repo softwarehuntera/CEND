@@ -57,6 +57,9 @@ type QueryResult struct {
 	PreferredDocuments []int `json:"preferredDocuments"`
 }
 
+type GetRequest struct {
+	Ids []int `json:"ids"`
+}
 
 func searchHandler(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -185,6 +188,11 @@ func addHandler(db *database.DB) http.HandlerFunc {
 			return
 		}
 		docCollec := docs.GetDocumentCollection()
+		if docCollec == nil {
+			writeError(w, http.StatusInternalServerError, "INERNAL_ERROR", "Error getting documents", "Document collection not found")
+			return
+		}
+
 		doc := docCollec.Get(*docID)
 		if err := doc.AddFields(req.Fields); err != nil {
 			http.Error(w, "Fields invalid", http.StatusBadRequest)
@@ -238,6 +246,57 @@ func removeHandler(db *database.DB) http.HandlerFunc {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode("200")
+	}
+}
+
+func getHandler(db *database.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+        if r.Method != http.MethodPost {
+            writeError(w, 
+                http.StatusMethodNotAllowed,
+                "METHOD_NOT_ALLOWED",
+                "Only POST method is allowed",
+                "Use POST to retrieve documents",
+            )
+            return
+        }
+
+		var req GetRequest
+        if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+            writeError(w,
+                http.StatusBadRequest,
+                "INVALID_JSON",
+                "Invalid request body",
+                err.Error(),
+            )
+            return
+        }
+		fmt.Printf("Incoming get request: %v", req)
+
+		docs, err := db.GetCollection("docs")
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "INERNAL_ERROR", "Error getting collection", err.Error())
+			return
+		}
+
+		docCollec := docs.GetDocumentCollection()
+		if docCollec == nil {
+			writeError(w, http.StatusInternalServerError, "INERNAL_ERROR", "Error getting documents", "Document collection not found")
+			return
+		}
+		
+		queryResults := make([]QueryResult, 0, len(req.Ids))
+		for _, reqId := range req.Ids {
+			doc := docCollec.Get(reqId)
+			if doc == nil {
+				writeError(w, http.StatusInternalServerError, "INERNAL_ERROR", "Error getting documents", "Document not found")
+				return
+			}
+			queryResults = append(queryResults, documentToQueryResult(doc))
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(queryResults)
 	}
 }
 

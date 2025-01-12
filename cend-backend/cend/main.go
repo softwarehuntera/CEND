@@ -58,6 +58,7 @@ func main() {
 	r.HandleFunc("/add", addHandler(db))
 	r.HandleFunc("/delete", removeHandler(db))
 	r.HandleFunc("/query", queryHandler(db))
+	r.HandleFunc("/get", getHandler(db))
 
 	log.Print("Listening on port 8000")
 	log.Fatal(http.ListenAndServe(":8000", handlers.LoggingHandler(os.Stdout, r)))
