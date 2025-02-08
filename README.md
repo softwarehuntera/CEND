@@ -2,13 +2,12 @@
 Central Encyclopedia for Name Disambiguation (CEND)
 
 
-### Project Structure
-Package structure taken from here:
-https://github.com/docker/awesome-compose/tree/master/nginx-golang-postgres
-
-
-
 # Front End
+Uses tools like
+
+https://www.npmjs.com/
+https://nextjs.org/
+https://ui.shadcn.com/
 
 ### API Interaction
 ```

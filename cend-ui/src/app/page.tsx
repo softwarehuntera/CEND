@@ -16,10 +16,16 @@ export default function Home() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedTerm, setSelectedTerm] = useState<TermEntry | null>(null);
   const [selectedTermCluster, setSelectedTermCluster] = useState<TermEntry[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleSearchResults = (results: any[]) => {
+    handlePageChange(1);
     setSearchResults(results);
   };
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+};
 
   const handleSelectedTerm = async (term: TermEntry) => {
     setSelectedTerm(term);
@@ -89,7 +95,12 @@ export default function Home() {
           {/* Search Input */}
           <SearchBar onSearchResults={handleSearchResults}/>
           {/* Results Section */}
-          <SearchResults results={searchResults} onSelectTerm={handleSelectedTerm} />
+          <SearchResults
+            results={searchResults}
+            onSelectTerm={handleSelectedTerm}
+            currentPage={currentPage}
+            handlePageChange={handlePageChange}
+          />
         </div>
 
         {/* Right Column */}

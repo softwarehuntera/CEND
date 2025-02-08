@@ -65,7 +65,7 @@ func searchHandler(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		if r.Method != http.MethodPost {
-			http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+			http.Error(w, fmt.Sprintf("Only POST method is allowed, got %s", r.Method), http.StatusMethodNotAllowed)
 			return
 		}
 
@@ -104,7 +104,7 @@ func queryHandler(db *database.DB) http.HandlerFunc {
             writeError(w, 
                 http.StatusMethodNotAllowed,
                 "METHOD_NOT_ALLOWED",
-                "Only POST method is allowed",
+                fmt.Sprintf("Only POST method is allowed, got %s", r.Method),
                 "Use POST to retrieve documents",
             )
             return
@@ -161,7 +161,7 @@ func addHandler(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		if r.Method != http.MethodPost {
-			http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+			http.Error(w, fmt.Sprintf("Only POST method is allowed, got %s", r.Method), http.StatusMethodNotAllowed)
 			return
 		}
 
@@ -210,7 +210,7 @@ func addHandler(db *database.DB) http.HandlerFunc {
 func removeHandler(db *database.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+			http.Error(w, fmt.Sprintf("Only POST method is allowed, got %s", r.Method), http.StatusMethodNotAllowed)
 			return
 		}
 
@@ -255,7 +255,7 @@ func getHandler(db *database.DB) http.HandlerFunc {
             writeError(w, 
                 http.StatusMethodNotAllowed,
                 "METHOD_NOT_ALLOWED",
-                "Only POST method is allowed",
+                fmt.Sprintf("Only POST method is allowed, got %s", r.Method),
                 "Use POST to retrieve documents",
             )
             return

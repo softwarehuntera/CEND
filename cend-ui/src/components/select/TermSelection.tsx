@@ -21,12 +21,12 @@ export default function TermSelection({ selectedTerm, selectedTermCluster }: Ter
                 {selectedTerm.fields && (
                     <div>
                         <strong>Fields:</strong>
-                        <ul>
-                            {Object.entries(selectedTerm.fields).map(([key, value]) => (
-                                <li key={key}>
-                                    <strong>{key}:</strong> {value}
-                                </li>
-                            ))}
+                        <ul style={{ paddingLeft: '20px' }}>
+                        {Object.entries(selectedTerm.fields).map(([key, value]) => (
+                            <li key={key} style={{ marginBottom: '5px' }}>
+                            <strong>{key}:</strong> {value}
+                            </li>
+                        ))}
                         </ul>
                     </div>
                 )}
